@@ -1,11 +1,18 @@
 package com.example.demospringpedidos.entities;
 
+import jakarta.persistence.*;
+
 import java.io.Serializable;
 import java.util.Objects;
 
+@Entity
+@Table(name = "tb_user") // Essa anotação é usada quando se quer que o nome da tabela no banco de dados seja diferente do nome da classe da entidade
+// Neste caso, isso se tornou necessário porque User é uma palavra reservada do banco H2, então precisamos usar outro nome para a tabela para evitar conflito
 public class User implements Serializable {
     private static final long serialVersionUID = 1L;
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Desta forma, o id será AUTO INCREMENT no banco de dados (dá certo na maioria dos bancos de dados, mas pode ser necessário usar outra estratégia em alguns casos)
     private Long id;
     private String name;
     private String email;
