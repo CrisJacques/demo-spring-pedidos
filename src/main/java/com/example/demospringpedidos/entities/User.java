@@ -1,8 +1,11 @@
 package com.example.demospringpedidos.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -18,6 +21,13 @@ public class User implements Serializable {
     private String email;
     private String phone;
     private String password;
+
+    @JsonIgnore// Isso é importante para evitar loop infinito na serialização de json feita pelo Jackson, porque um usuário tem pedidos, mas o pedido tem um usuário associado (o @JsonIgnore pode ser colocado aqui ou lá na classe Order, depende de o que é mais interessante ver ou não no json de resposta da API)
+    @OneToMany(mappedBy = "client") // Um usuário pode ter muitos pedidos. Como esta é a classe do usuário, usamos OneToMany aqui. No mappedBy, devemos informar o nome do atributo que vai armazenar o objeto User na classe Order
+    private List<Order> orders = new ArrayList<>();
+    // Por padrão, o JPA faz lazy loading para evitar estouro de memória.
+    // Ou seja, só serão retornados os objetos associados se o Jackson pedir explicitamente ao JPA (como no caso de quando fazemos GET /users/1, vem os pedidos associados)
+    // Isso é ativado pela configuração spring.jpa.open-in-view=true do application.properties
 
     public User(){
 
@@ -71,6 +81,10 @@ public class User implements Serializable {
         this.password = password;
     }
 
+    public List<Order> getOrders() {
+        return orders;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
@@ -82,4 +96,6 @@ public class User implements Serializable {
     public int hashCode() {
         return Objects.hashCode(id);
     }
+
+
 }
