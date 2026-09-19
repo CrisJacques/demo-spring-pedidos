@@ -3,7 +3,7 @@ package com.example.demospringpedidos.entities;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
-import java.util.Objects;
+import java.util.*;
 
 @Entity
 @Table(name = "tb_category")
@@ -14,6 +14,10 @@ public class Category implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
+
+    private Set<Product> products = new HashSet<>();// Neste caso, é mais interessante usar Set ao invés de List porque queremos garantir
+    // que a lista de produtos não vai ter valores repetidos. Usamos o HashSet porque o ordenamento não importa. Além disso, é importante
+    // inicializar o Set para que ele não comece valendo null, ele deve começar valendo vazio
 
     public Category() {
 
@@ -38,6 +42,10 @@ public class Category implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Set<Product> getProducts() {
+        return products;
     }
 
     @Override
