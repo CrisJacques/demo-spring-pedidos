@@ -1,5 +1,6 @@
 package com.example.demospringpedidos.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
@@ -15,6 +16,9 @@ public class Category implements Serializable {
     private Long id;
     private String name;
 
+    @JsonIgnore // Para evitar loop infinito na hora de o Jackson montar o json da resposta, pois uma categoria pode ter
+    // vários produtos e um produto pode ter várias categorias. Nestes casos, a gente escolhe uma das entidades para colocar o @JsonIgnore.
+    @ManyToMany(mappedBy = "categories") // Qual o nome do atributo na classe da outra entidade (Product) que referencia esta entidade (Category)
     private Set<Product> products = new HashSet<>();// Neste caso, é mais interessante usar Set ao invés de List porque queremos garantir
     // que a lista de produtos não vai ter valores repetidos. Usamos o HashSet porque o ordenamento não importa. Além disso, é importante
     // inicializar o Set para que ele não comece valendo null, ele deve começar valendo vazio

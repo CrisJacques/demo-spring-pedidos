@@ -18,9 +18,15 @@ public class Product implements Serializable {
     private Double price;
     private String imgUrl;
 
-    private Set<Category> categories = new HashSet<>(); // Neste caso, é mais interessante usar Set ao invés de List porque queremos garantir
-    // que a lista de categorias não vai ter valores repetidos. Usamos o HashSet porque o ordenamento não importa. Além disso, é importante
-    // inicializar o Set para que ele não comece valendo null, ele deve começar valendo vazio
+    // Quando a relação entre as entidades é muitos para muitos, essa relação será representada em uma nova tabela no banco. A anotação @JoinTable deve ser
+    // usada em apenas uma das entidades relacionadas (aqui colocamos na classe Product, mas poderíamos ter colocado na classe Category).
+    @ManyToMany
+    @JoinTable(name = "tb_product_category", // Qual deve ser o nome da tabela que vai armazenar as chaves estrangeiras das entidades relacionadas
+            joinColumns = @JoinColumn(name = "product_id"), // Qual deve ser o nome da coluna que vai referenciar a chave estrangeira referente a esta classe (Product)
+            inverseJoinColumns = @JoinColumn(name = "category_id")) // Qual deve ser o nome da coluna que vai referenciar a chave estrangeira referente a outra classe (Category)
+            // Obs.: se tivéssemos colocado a anotação @JoinTable na classe Category, o joinColumns seria "category_id" e o inverseJoinColumns seria "product_id"
+    private Set<Category> categories = new HashSet<>(); // Neste caso, é mais interessante usar Set ao invés de List porque queremos garantir que a lista de categorias não vai ter
+    // valores repetidos. Usamos o HashSet porque o ordenamento não importa. Além disso, é importante inicializar o Set para que ele não comece valendo null, ele deve começar valendo vazio
 
     public Product() {
 
