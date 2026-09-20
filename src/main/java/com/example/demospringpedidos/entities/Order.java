@@ -123,4 +123,13 @@ public class Order implements Serializable {
     public int hashCode() {
         return Objects.hashCode(id);
     }
+
+    // Colocando get no começo do nome do método para que o resultado apareça no json de resposta
+    public Double getTotal(){
+        double sum = 0.0;
+        for(OrderItem orderItem : items){
+            sum += orderItem.getSubTotal();
+        }
+        return sum;
+    }
 }

@@ -83,4 +83,11 @@ public class OrderItem implements Serializable {
     public int hashCode() {
         return Objects.hashCode(id);
     }
+
+    // Não dá para nomear essa função simplesmente como subTotal(), porque no Java Enterprise o que vale é o get, pois o
+    // padrão do Java EE é os métodos que retornam uma informação terem seu nome iniciado com get, então
+    // para o subtotal aparecer no json de resposta, precisamos que o método tenha get no começo do nome
+    public Double getSubTotal(){
+        return price * quantity;
+    }
 }
