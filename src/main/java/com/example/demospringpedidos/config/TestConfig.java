@@ -73,5 +73,12 @@ public class TestConfig implements CommandLineRunner {
         OrderItem oi4 = new OrderItem(o3, p5, 2, p5.getPrice());
         orderItemRepository.saveAll(Arrays.asList(oi1, oi2, oi3, oi4));
 
+        Payment pay1 = new Payment(null, Instant.parse("2019-06-20T19:53:07Z"), o1);
+        o1.setPayment(pay1); // Como o Payment é a entidade dependente na relação 1:1 com o Order, então não chamamos um
+        // repository de Payment para salvar no banco: a gente usa o setPayment do Order e depois salva o Order no banco.
+        // Como foi configurado CascadeType.ALL lá na classe Order, então o salvamento da Order no banco também vai
+        // salvar o Payment
+        orderRepository.save(o1);
+
     }
 }

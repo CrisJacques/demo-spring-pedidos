@@ -2,7 +2,6 @@ package com.example.demospringpedidos.entities;
 
 import com.example.demospringpedidos.entities.enums.OrderStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
@@ -34,6 +33,17 @@ public class Order implements Serializable {
     @OneToMany(mappedBy = "id.order") // Tem que ser id.order porque o Order correspondente na classe OrderItem está dentro do atributo id
     private Set<OrderItem> items = new HashSet<>();
 
+    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
+    // order é o nome do atributo que referencia a classe Order lá na classe Payment
+    // mappedBy → diz quem controla o relacionamento no banco
+    // cascade → diz quais operações devem ser propagadas entre as entidades - no caso acima, seriam todos os tipos de cascade:
+    //    CascadeType.PERSIST,
+    //    CascadeType.MERGE,
+    //    CascadeType.REMOVE,
+    //    CascadeType.REFRESH,
+    //    CascadeType.DETACH
+    // CascadeType.ALL: "Quando eu fizer algo com o Order, faça a operação correspondente no Payment também."
+    private Payment payment;
 
     public Order() {
 
@@ -83,6 +93,14 @@ public class Order implements Serializable {
 
     public Set<OrderItem> getItems() {
         return items;
+    }
+
+    public Payment getPayment() {
+        return payment;
+    }
+
+    public void setPayment(Payment payment) {
+        this.payment = payment;
     }
 
     @Override
