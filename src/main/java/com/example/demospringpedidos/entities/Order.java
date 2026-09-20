@@ -7,7 +7,9 @@ import jakarta.persistence.*;
 
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Table(name = "tb_order") // Essa anotação é usada quando se quer que o nome da tabela no banco de dados seja diferente do nome da classe da entidade
@@ -28,6 +30,9 @@ public class Order implements Serializable {
     @ManyToOne // Um cliente pode possuir muitos pedidos. Como esta classe é a do pedido, então aqui usamos ManyToOne
     @JoinColumn(name = "client_id") // Aqui configuramos o nome da chave estrangeira que será criada no banco de dados
     private User client;
+
+    @OneToMany(mappedBy = "id.order") // Tem que ser id.order porque o Order correspondente na classe OrderItem está dentro do atributo id
+    private Set<OrderItem> items = new HashSet<>();
 
 
     public Order() {
@@ -74,6 +79,10 @@ public class Order implements Serializable {
 
     public void setClient(User client) {
         this.client = client;
+    }
+
+    public Set<OrderItem> getItems() {
+        return items;
     }
 
     @Override
