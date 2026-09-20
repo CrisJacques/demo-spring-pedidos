@@ -1,5 +1,6 @@
 package com.example.demospringpedidos.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.io.Serializable;
@@ -27,6 +28,9 @@ public class Product implements Serializable {
             // Obs.: se tivéssemos colocado a anotação @JoinTable na classe Category, o joinColumns seria "category_id" e o inverseJoinColumns seria "product_id"
     private Set<Category> categories = new HashSet<>(); // Neste caso, é mais interessante usar Set ao invés de List porque queremos garantir que a lista de categorias não vai ter
     // valores repetidos. Usamos o HashSet porque o ordenamento não importa. Além disso, é importante inicializar o Set para que ele não comece valendo null, ele deve começar valendo vazio
+
+    @OneToMany(mappedBy = "id.product") // Tem que ser id.product porque o Product correspondente na classe OrderItem está dentro do atributo id
+    private Set<OrderItem> items = new HashSet<>(); // Usando Set<> para avisar ao JPA não deve ser permitida a repetição de valores
 
     public Product() {
 
@@ -82,6 +86,16 @@ public class Product implements Serializable {
 
     public Set<Category> getCategories() {
         return categories;
+    }
+
+    // Faz mais sentido retornar as Orders em que um Product está presente do que retornar as OrderItems em que ele está presente
+    @JsonIgnore // Para evitar loop infinito nas chamadas do Jackson para montar o json de resposta, pois um produto tem orders que tem produtos e assim por diante
+    public Set<Order> getOrders() {
+        Set<Order> set = new HashSet<>();
+        for (OrderItem orderItem : items) {
+            set.add(orderItem.getOrder());
+        }
+        return set;
     }
 
     @Override
