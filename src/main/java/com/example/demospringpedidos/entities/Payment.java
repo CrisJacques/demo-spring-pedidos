@@ -1,7 +1,13 @@
 package com.example.demospringpedidos.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.MapsId;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -18,8 +24,9 @@ public class Payment implements Serializable {
     private Instant moment;
 
     @OneToOne
-    @MapsId // Anotação que devemos colocar na classe dependente no relacionamento OneToOne. A classe Payment é a classe dependente neste caso porque ela não pode ser salva no banco sem
-    // estar associada a uma Order. Já a classe Order é a classe independente, pois ela pode ser salva no banco sem nenhum pagamento associado a ela (ver diagrama de classes)
+    @MapsId // Anotação que devemos colocar na classe dependente no relacionamento OneToOne. A classe Payment é a classe
+    // dependente neste caso porque ela não pode ser salva no banco sem estar associada a uma Order. Já a classe Order é
+    // a classe independente, pois ela pode ser salva no banco sem nenhum pagamento associado a ela (ver diagrama de classes)
     @JsonIgnore
     private Order order;
 

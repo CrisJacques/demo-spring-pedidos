@@ -1,8 +1,17 @@
 package com.example.demospringpedidos.config;
 
-import com.example.demospringpedidos.entities.*;
+import com.example.demospringpedidos.entities.Category;
+import com.example.demospringpedidos.entities.Order;
+import com.example.demospringpedidos.entities.OrderItem;
+import com.example.demospringpedidos.entities.Payment;
+import com.example.demospringpedidos.entities.Product;
+import com.example.demospringpedidos.entities.User;
 import com.example.demospringpedidos.entities.enums.OrderStatus;
-import com.example.demospringpedidos.repositories.*;
+import com.example.demospringpedidos.repositories.CategoryRepository;
+import com.example.demospringpedidos.repositories.OrderItemRepository;
+import com.example.demospringpedidos.repositories.OrderRepository;
+import com.example.demospringpedidos.repositories.ProductRepository;
+import com.example.demospringpedidos.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
