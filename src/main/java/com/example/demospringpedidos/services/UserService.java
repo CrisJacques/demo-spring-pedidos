@@ -2,6 +2,7 @@ package com.example.demospringpedidos.services;
 
 import com.example.demospringpedidos.entities.User;
 import com.example.demospringpedidos.repositories.UserRepository;
+import com.example.demospringpedidos.services.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +24,8 @@ public class UserService {
 
     public User findById(Long id){
         Optional<User> obj = repository.findById(id);
-        return obj.get();
+        return obj.orElseThrow(() -> new ResourceNotFoundException(id)); // O método orElseThrow() tenta fazer o get e
+        // se não encontrar, lança a exceção passada por parâmetro
     }
 
     public User insert(User obj) {
