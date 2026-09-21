@@ -1,6 +1,7 @@
 package com.example.demospringpedidos.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -21,10 +22,16 @@ public class User implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Desta forma, o id será AUTO INCREMENT no banco de dados (dá certo na maioria dos bancos de dados, mas pode ser necessário usar outra estratégia em alguns casos)
+    @Schema(description = "Identificador único do usuário", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
+    @Schema(description = "Nome completo do usuário", example = "Maria Brown")
     private String name;
+    @Schema(description = "E-mail do usuário", example = "maria@gmail.com")
     private String email;
+    @Schema(description = "Telefone para contato", example = "988888888")
     private String phone;
+    @Schema(description = "Senha do usuário. Nunca é retornada nas respostas.", example = "123456",
+            accessMode = Schema.AccessMode.WRITE_ONLY)
     private String password;
 
     @JsonIgnore// Isso é importante para evitar loop infinito na serialização de json feita pelo Jackson, porque um usuário tem pedidos, mas o pedido tem um usuário associado (o @JsonIgnore pode ser colocado aqui ou lá na classe Order, depende de o que é mais interessante ver ou não no json de resposta da API)

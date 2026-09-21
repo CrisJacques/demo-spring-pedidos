@@ -1,6 +1,7 @@
 package com.example.demospringpedidos.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -20,7 +21,9 @@ public class Payment implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "Identificador do pagamento", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
+    @Schema(description = "Instante de confirmação do pagamento", example = "2019-06-20T21:53:07Z")
     private Instant moment;
 
     @OneToOne

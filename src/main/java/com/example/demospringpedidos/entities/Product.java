@@ -1,6 +1,7 @@
 package com.example.demospringpedidos.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -23,10 +24,15 @@ public class Product implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "Identificador único do produto", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
+    @Schema(description = "Nome do produto", example = "The Lord of the Rings")
     private String name;
+    @Schema(description = "Descrição detalhada do produto", example = "Lorem ipsum dolor sit amet, consectetur.")
     private String description;
+    @Schema(description = "Preço unitário", example = "90.5", minimum = "0")
     private Double price;
+    @Schema(description = "URL da imagem do produto", example = "https://example.com/images/lord-of-the-rings.jpg")
     private String imgUrl;
 
     // Quando a relação entre as entidades é muitos para muitos, essa relação será representada em uma nova tabela no banco. A anotação @JoinTable deve ser

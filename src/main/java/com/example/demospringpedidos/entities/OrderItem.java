@@ -2,6 +2,7 @@ package com.example.demospringpedidos.entities;
 
 import com.example.demospringpedidos.entities.pk.OrderItemPk;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -21,7 +22,9 @@ public class OrderItem implements Serializable {
     // Sempre tem que inicializar a chave primária composta para evitar NullPointerException na hora de fazer os sets dos seus atributos (olhar as duas
     // primeiras linhas do construtor com argumentos, mais abaixo)
 
+    @Schema(description = "Quantidade do produto no pedido", example = "2", minimum = "1")
     private Integer quantity;
+    @Schema(description = "Preço unitário registrado no momento da compra", example = "90.5", minimum = "0")
     private Double price;
 
     public OrderItem() {

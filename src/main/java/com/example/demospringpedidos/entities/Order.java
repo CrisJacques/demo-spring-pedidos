@@ -2,6 +2,7 @@ package com.example.demospringpedidos.entities;
 
 import com.example.demospringpedidos.entities.enums.OrderStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -27,11 +28,15 @@ public class Order implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "Identificador único do pedido", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "GMT")
+    @Schema(description = "Instante de criação do pedido", example = "2019-06-20T19:53:07Z")
     private Instant moment;
 
+    @Schema(description = "Status atual do pedido", example = "PAID",
+            allowableValues = {"WAITING_PAYMENT", "PAID", "SHIPPED", "DELIVERED", "CANCELED"})
     private Integer orderStatus; // Mesmo o OrderStatus sendo um tipo enumerado (enum), internamente na classe trataremos ele como inteiro
     // para ficar mais claro que ele será salvo no banco de dados como um inteiro
 
