@@ -2,8 +2,11 @@ package com.example.demospringpedidos.services;
 
 import com.example.demospringpedidos.entities.User;
 import com.example.demospringpedidos.repositories.UserRepository;
+import com.example.demospringpedidos.services.exceptions.DatabaseException;
 import com.example.demospringpedidos.services.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -33,7 +36,12 @@ public class UserService {
     }
 
     public void delete(Long id) {
-        repository.deleteById(id);
+        findById(id);// Vai retornar ResourceNotFoundException se não encontrar usuário no banco com o id informado
+        try {
+            repository.deleteById(id);
+        } catch (DataIntegrityViolationException e) {
+            throw new DatabaseException(e.getMessage());
+        }
     }
 
     public User update(Long id, User obj) {
