@@ -1,6 +1,7 @@
 package com.example.demospringpedidos.resources;
 
 import com.example.demospringpedidos.entities.User;
+import com.example.demospringpedidos.resources.exceptions.StandardError;
 import com.example.demospringpedidos.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -57,6 +58,8 @@ public class UserResource {
                               "phone": "988888888"
                             }
                             """))),
+            @ApiResponse(responseCode = "404", description = "Recurso não encontrado",
+                    content = @Content(schema = @Schema(implementation = StandardError.class)))
     })
     @GetMapping(value = "/{id}")
     public ResponseEntity<User> findById(@Parameter(description = "ID do usuário", example = "1")
@@ -68,8 +71,7 @@ public class UserResource {
     @Operation(summary = "Cadastrar usuário", description = "Cria um novo usuário e retorna o recurso criado.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Usuário criado com sucesso",
-                    content = @Content(schema = @Schema(implementation = User.class))),
-            @ApiResponse(responseCode = "400", description = "Dados inválidos")
+                    content = @Content(schema = @Schema(implementation = User.class)))
     })
     @PostMapping
     public ResponseEntity<User> insert(@io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -90,7 +92,11 @@ public class UserResource {
 
     @Operation(summary = "Excluir usuário", description = "Remove um usuário pelo identificador.")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Usuário removido com sucesso")
+            @ApiResponse(responseCode = "204", description = "Usuário removido com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Recurso não encontrado",
+                    content = @Content(schema = @Schema(implementation = StandardError.class))),
+            @ApiResponse(responseCode = "400", description = "Erro de banco de dados",
+                    content = @Content(schema = @Schema(implementation = StandardError.class)))
     })
     @DeleteMapping(value = "/{id}")
     public ResponseEntity<Void> delete(@Parameter(description = "ID do usuário", example = "1")
@@ -102,7 +108,9 @@ public class UserResource {
     @Operation(summary = "Atualizar usuário", description = "Atualiza os dados de um usuário existente.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Usuário atualizado com sucesso",
-                    content = @Content(schema = @Schema(implementation = User.class)))
+                    content = @Content(schema = @Schema(implementation = User.class))),
+            @ApiResponse(responseCode = "404", description = "Recurso não encontrado",
+                    content = @Content(schema = @Schema(implementation = StandardError.class)))
     })
     @PutMapping(value = "/{id}")
     public ResponseEntity<User> update(@Parameter(description = "ID do usuário", example = "1")
