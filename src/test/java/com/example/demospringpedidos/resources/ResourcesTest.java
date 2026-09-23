@@ -55,6 +55,21 @@ class ResourcesTest {
         assertThrows(RuntimeException.class, () -> categoryResource.findById(1L));
     }
 
+    @Test void categoryResourceInsertReturnsCreatedResourceAndLocation() {
+        Category category = new Category(1L, "Electronics");
+        when(categoryService.insert(category)).thenReturn(category);
+
+        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/categories");
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+
+        var response = categoryResource.insert(category);
+
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals("/categories/1", response.getHeaders().getLocation().getPath());
+        assertSame(category, response.getBody());
+        verify(categoryService).insert(category);
+    }
+
     @Test void productResourceReturnsListAndItem() {
         List<Product> list = List.of(new Product(1L, "Book", "Description", 10.0, ""));
         when(productService.findAll()).thenReturn(list);
