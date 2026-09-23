@@ -1,7 +1,6 @@
 package com.example.demospringpedidos.resources;
 
 import com.example.demospringpedidos.entities.Category;
-import com.example.demospringpedidos.entities.User;
 import com.example.demospringpedidos.services.CategoryService;
 import com.example.demospringpedidos.resources.exceptions.StandardError;
 import io.swagger.v3.oas.annotations.Operation;
@@ -77,6 +76,34 @@ public class CategoryResource {
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(obj.getId()).toUri();
         return ResponseEntity.created(uri).body(obj); // Retornando status code 201 com a uri do recurso criado no
         // header Location e o objeto inserido no body
+    }
+
+    @Operation(summary = "Atualizar categoria", description = "Atualiza os dados de uma categoria existente.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Categoria atualizada com sucesso",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Category.class))),
+            @ApiResponse(responseCode = "404", description = "Recurso não encontrado",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = StandardError.class))),
+            @ApiResponse(responseCode = "422", description = "Nome da categoria já existente",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = StandardError.class)))
+    })
+    @PutMapping(value = "/{id}")
+    public ResponseEntity<Category> update(@Parameter(description = "ID da categoria", example = "1")
+                                       @PathVariable Long id,
+                                       @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                                               required = true, description = "Dados atualizados da categoria",
+                                               content = @Content(mediaType = "application/json",
+                                                       schema = @Schema(implementation = Category.class),
+                                                       examples = @ExampleObject(value = """
+                                                       {
+                                                         "name": "Smartphones"
+                                                       }
+                                                       """))) @RequestBody Category obj) {
+        obj = service.update(id, obj);
+        return ResponseEntity.ok().body(obj);
     }
 
 }

@@ -70,6 +70,26 @@ class ResourcesTest {
         verify(categoryService).insert(category);
     }
 
+    @Test void categoryResourceUpdateReturnsUpdatedCategory() {
+        Category input = new Category(null, "Smartphones");
+        Category updated = new Category(1L, "Smartphones");
+        when(categoryService.update(1L, input)).thenReturn(updated);
+
+        var response = categoryResource.update(1L, input);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertSame(updated, response.getBody());
+        verify(categoryService).update(1L, input);
+    }
+
+    @Test void categoryResourceUpdatePropagatesNotFound() {
+        Category input = new Category(null, "Smartphones");
+        when(categoryService.update(9L, input)).thenThrow(new ResourceNotFoundException(9L));
+
+        assertThrows(ResourceNotFoundException.class, () -> categoryResource.update(9L, input));
+        verify(categoryService).update(9L, input);
+    }
+
     @Test void productResourceReturnsListAndItem() {
         List<Product> list = List.of(new Product(1L, "Book", "Description", 10.0, ""));
         when(productService.findAll()).thenReturn(list);

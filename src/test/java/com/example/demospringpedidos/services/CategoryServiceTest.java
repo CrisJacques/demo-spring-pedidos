@@ -3,6 +3,8 @@ package com.example.demospringpedidos.services;
 import com.example.demospringpedidos.entities.Category;
 import com.example.demospringpedidos.repositories.CategoryRepository;
 import com.example.demospringpedidos.services.exceptions.BusinessException;
+import com.example.demospringpedidos.services.exceptions.ResourceNotFoundException;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -59,6 +61,52 @@ class CategoryServiceTest {
         );
 
         assertEquals("Category already exists", exception.getMessage());
+        verify(repository, never()).save(any(Category.class));
+    }
+
+    @Test void updateChangesCategoryNameWhenNewNameIsUnique() {
+        Category entity = new Category(1L, "Books");
+        Category input = new Category(null, "Electronics");
+
+        when(repository.getReferenceById(1L)).thenReturn(entity);
+        when(repository.findAll()).thenReturn(List.of(entity));
+        when(repository.save(entity)).thenReturn(entity);
+
+        Category result = service.update(1L, input);
+
+        assertSame(entity, result);
+        assertEquals("Electronics", entity.getName());
+        verify(repository).save(entity);
+    }
+
+    @Test void updateThrowsResourceNotFoundWhenCategoryDoesNotExist() {
+        when(repository.getReferenceById(9L)).thenThrow(new EntityNotFoundException());
+
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
+                () -> service.update(9L, new Category(null, "Electronics"))
+        );
+
+        assertEquals("Resource not found. Id 9", exception.getMessage());
+        verify(repository, never()).save(any(Category.class));
+    }
+
+    @Test void updateThrowsBusinessExceptionWhenNewNameAlreadyExists() {
+        Category entity = new Category(1L, "Books");
+        Category input = new Category(null, "Electronics");
+
+        when(repository.getReferenceById(1L)).thenReturn(entity);
+        when(repository.findAll()).thenReturn(List.of(
+                entity,
+                new Category(2L, "Electronics")
+        ));
+
+        BusinessException exception = assertThrows(
+                BusinessException.class,
+                () -> service.update(1L, input)
+        );
+
+        assertEquals("New name for category already exists", exception.getMessage());
         verify(repository, never()).save(any(Category.class));
     }
 }
