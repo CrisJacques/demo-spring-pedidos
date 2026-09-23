@@ -1,5 +1,6 @@
 package com.example.demospringpedidos.resources.exceptions;
 
+import com.example.demospringpedidos.services.exceptions.BusinessException;
 import com.example.demospringpedidos.services.exceptions.DatabaseException;
 import com.example.demospringpedidos.services.exceptions.ResourceNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,6 +26,14 @@ public class ResourceExceptionHandler {
     public ResponseEntity<StandardError> databaseError(DatabaseException e, HttpServletRequest request) {
         String error = "Database error";
         HttpStatus status = HttpStatus.BAD_REQUEST;
+        StandardError err = new StandardError(Instant.now(), status.value(), error, e.getMessage(), request.getRequestURI());
+        return ResponseEntity.status(status).body(err);
+    }
+
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<StandardError> businessError(BusinessException e, HttpServletRequest request) {
+        String error = "Business error";
+        HttpStatus status = HttpStatus.UNPROCESSABLE_CONTENT;
         StandardError err = new StandardError(Instant.now(), status.value(), error, e.getMessage(), request.getRequestURI());
         return ResponseEntity.status(status).body(err);
     }

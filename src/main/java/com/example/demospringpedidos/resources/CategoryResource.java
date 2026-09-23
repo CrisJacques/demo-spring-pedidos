@@ -1,21 +1,23 @@
 package com.example.demospringpedidos.resources;
 
 import com.example.demospringpedidos.entities.Category;
+import com.example.demospringpedidos.entities.User;
 import com.example.demospringpedidos.services.CategoryService;
+import com.example.demospringpedidos.resources.exceptions.StandardError;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -54,6 +56,27 @@ public class CategoryResource {
                                              @PathVariable Long id) {
         Category obj = service.findById(id);
         return ResponseEntity.ok().body(obj);
+    }
+
+    @Operation(summary = "Cadastrar categoria", description = "Cria uma nova categoria e retorna o recurso criado.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Categoria criada com sucesso",
+                    content = @Content(schema = @Schema(implementation = Category.class))),
+            @ApiResponse(responseCode = "422", description = "Erro de negócio",
+                    content = @Content(schema = @Schema(implementation = StandardError.class)))
+    })
+    @PostMapping
+    public ResponseEntity<Category> insert(@io.swagger.v3.oas.annotations.parameters.RequestBody(
+            required = true, description = "Dados da nova categoria",
+            content = @Content(examples = @ExampleObject(value = """
+                    {
+                      "name": "Electronics"
+                    }
+                    """))) @RequestBody Category obj) {
+        obj = service.insert(obj);
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(obj.getId()).toUri();
+        return ResponseEntity.created(uri).body(obj); // Retornando status code 201 com a uri do recurso criado no
+        // header Location e o objeto inserido no body
     }
 
 }

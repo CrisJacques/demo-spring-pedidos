@@ -2,6 +2,7 @@ package com.example.demospringpedidos.services;
 
 import com.example.demospringpedidos.entities.Category;
 import com.example.demospringpedidos.repositories.CategoryRepository;
+import com.example.demospringpedidos.services.exceptions.BusinessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +25,17 @@ public class CategoryService {
     public Category findById(Long id){
         Optional<Category> obj = repository.findById(id);
         return obj.get();
+    }
+
+    public Category insert(Category obj) {
+        List<Category> categories = findAll();
+        boolean isNewCategory = categories.stream().map(Category::getName).noneMatch(name -> name.equals(obj.getName()));
+
+        if (isNewCategory) {
+            return repository.save(obj);
+        } else{
+            throw new BusinessException("Category already exists");
+        }
     }
 
 }
