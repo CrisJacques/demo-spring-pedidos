@@ -37,7 +37,7 @@ class CategoryServiceTest {
 
     @Test void findByIdThrowsWhenCategoryIsMissing() {
         when(repository.findById(1L)).thenReturn(Optional.empty());
-        assertThrows(NoSuchElementException.class, () -> service.findById(1L));
+        assertThrows(ResourceNotFoundException.class, () -> service.findById(1L));
     }
 
     @Test void insertSavesCategoryWhenNameIsUnique() {

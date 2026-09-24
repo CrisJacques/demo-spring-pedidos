@@ -65,7 +65,7 @@ class UserServiceTest {
         when(repository.findById(1L)).thenReturn(Optional.of(new User()));
         doThrow(new DataIntegrityViolationException("constraint")).when(repository).deleteById(1L);
         DatabaseException exception = assertThrows(DatabaseException.class, () -> service.delete(1L));
-        assertEquals("constraint", exception.getMessage());
+        assertEquals("Usuário possui pedidos associados", exception.getMessage());
     }
 
     @Test void updateChangesEditableFieldsAndPreservesPassword() {
