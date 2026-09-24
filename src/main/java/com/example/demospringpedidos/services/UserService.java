@@ -41,7 +41,7 @@ public class UserService {
         try {
             repository.deleteById(id);
         } catch (DataIntegrityViolationException e) {
-            throw new DatabaseException(e.getMessage());
+            throw new DatabaseException("Usuário possui pedidos associados");
         }
     }
 

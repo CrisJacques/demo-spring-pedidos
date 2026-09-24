@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,7 +31,9 @@ public class UserResource {
     @Operation(summary = "Listar usuários", description = "Retorna a lista completa de usuários cadastrados.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Usuários encontrados com sucesso",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+                    content = @Content(mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = User.class)),
+                            examples = @ExampleObject(value = """
                             [
                               {
                                 "id": 1,
@@ -50,7 +53,9 @@ public class UserResource {
     @Operation(summary = "Buscar usuário por id", description = "Retorna um usuário específico pelo identificador.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Usuário encontrado com sucesso",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = User.class),
+                            examples = @ExampleObject(value = """
                             {
                               "id": 1,
                               "name": "Maria Brown",
@@ -76,7 +81,9 @@ public class UserResource {
     @PostMapping
     public ResponseEntity<User> insert(@io.swagger.v3.oas.annotations.parameters.RequestBody(
             required = true, description = "Dados do novo usuário",
-            content = @Content(examples = @ExampleObject(value = """
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = User.class),
+                    examples = @ExampleObject(value = """
                     {
                       "name": "João da Silva",
                       "email": "joao@example.com",
@@ -117,7 +124,9 @@ public class UserResource {
                                        @PathVariable Long id,
                                        @io.swagger.v3.oas.annotations.parameters.RequestBody(
                                                required = true, description = "Dados atualizados do usuário",
-                                               content = @Content(examples = @ExampleObject(value = """
+                                               content = @Content(mediaType = "application/json",
+                                                       schema = @Schema(implementation = User.class),
+                                                       examples = @ExampleObject(value = """
                                                        {
                                                          "name": "Maria Brown",
                                                          "email": "maria.brown@example.com",
