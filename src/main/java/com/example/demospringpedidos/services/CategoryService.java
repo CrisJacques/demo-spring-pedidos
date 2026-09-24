@@ -1,11 +1,14 @@
 package com.example.demospringpedidos.services;
 
 import com.example.demospringpedidos.entities.Category;
+import com.example.demospringpedidos.entities.User;
 import com.example.demospringpedidos.repositories.CategoryRepository;
 import com.example.demospringpedidos.services.exceptions.BusinessException;
+import com.example.demospringpedidos.services.exceptions.DatabaseException;
 import com.example.demospringpedidos.services.exceptions.ResourceNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,7 +29,7 @@ public class CategoryService {
 
     public Category findById(Long id){
         Optional<Category> obj = repository.findById(id);
-        return obj.get();
+        return obj.orElseThrow(() -> new ResourceNotFoundException(id));
     }
 
     public Category insert(Category obj) {
@@ -58,6 +61,15 @@ public class CategoryService {
     private boolean isNewCategory(String categoryName) {
         List<Category> categories = findAll();
         return categories.stream().map(Category::getName).noneMatch(name -> name.equals(categoryName));
+    }
+
+    public void delete(Long id) {
+        findById(id);// Vai retornar ResourceNotFoundException se não encontrar categoria no banco com o id informado
+        try {
+            repository.deleteById(id);
+        } catch (DataIntegrityViolationException e) {
+            throw new DatabaseException("Categoria possui produtos associados");
+        }
     }
 
 }

@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,7 +31,9 @@ public class CategoryResource {
     @Operation(summary = "Listar categorias", description = "Retorna a lista completa de categorias cadastradas.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Categorias encontradas com sucesso",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+                    content = @Content(mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = Category.class)),
+                            examples = @ExampleObject(value = """
                             [
                               {"id": 1, "name": "Electronics"},
                               {"id": 2, "name": "Books"}
@@ -46,9 +49,14 @@ public class CategoryResource {
     @Operation(summary = "Buscar categoria por id", description = "Retorna uma categoria específica pelo identificador.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Categoria encontrada com sucesso",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Category.class),
+                            examples = @ExampleObject(value = """
                             {"id": 1, "name": "Electronics"}
-                            """)))
+                            """))),
+            @ApiResponse(responseCode = "404", description = "Recurso não encontrado",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = StandardError.class)))
     })
     @GetMapping(value = "/{id}")
     public ResponseEntity<Category> findById(@Parameter(description = "ID da categoria", example = "1")
@@ -67,7 +75,9 @@ public class CategoryResource {
     @PostMapping
     public ResponseEntity<Category> insert(@io.swagger.v3.oas.annotations.parameters.RequestBody(
             required = true, description = "Dados da nova categoria",
-            content = @Content(examples = @ExampleObject(value = """
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = Category.class),
+                    examples = @ExampleObject(value = """
                     {
                       "name": "Electronics"
                     }
@@ -104,6 +114,25 @@ public class CategoryResource {
                                                        """))) @RequestBody Category obj) {
         obj = service.update(id, obj);
         return ResponseEntity.ok().body(obj);
+    }
+
+    @Operation(summary = "Excluir categoria",
+            description = "Remove uma categoria pelo identificador. Em caso de sucesso, não retorna conteúdo.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Categoria removida com sucesso",
+                    content = @Content),
+            @ApiResponse(responseCode = "404", description = "Recurso não encontrado",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = StandardError.class))),
+            @ApiResponse(responseCode = "400", description = "Erro de banco de dados",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = StandardError.class)))
+    })
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<Void> delete(@Parameter(description = "ID da categoria", example = "1", required = true)
+                                       @PathVariable Long id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
     }
 
 }
