@@ -34,7 +34,7 @@ public class UserService {
     }
 
     public User insert(User obj) {
-        if (repository.existsByEmail(obj.getEmail())) {
+        if (repository.existsByEmailIgnoreCase(obj.getEmail())) {
             throw new BusinessException("Email already exists.");
         }
         return repository.save(obj);
@@ -51,19 +51,23 @@ public class UserService {
 
     public User update(Long id, User obj) {
         try {
-            User entity = repository.getReferenceById(id);
-            updateData(entity, obj);
-            return repository.save(entity);
+            User updatedEntity = updateData(id, obj);
+            return repository.save(updatedEntity);
         } catch (EntityNotFoundException e) {
             throw new ResourceNotFoundException(id);
         }
     }
 
-    private void updateData(User entity, User obj) {
+    private User updateData(Long id, User obj) {
+        if(repository.existsByEmailIgnoreCase(obj.getEmail())) {
+            throw new BusinessException("Email already exists.");
+        }
+        User entity = repository.getReferenceById(id);
         // Nem todos os atributos do objeto serão atualizados (id e password não serão atualizados)
         entity.setName(obj.getName());
         entity.setEmail(obj.getEmail());
         entity.setPhone(obj.getPhone());
+        return entity;
     }
 
 }
