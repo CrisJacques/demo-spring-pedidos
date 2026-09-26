@@ -40,18 +40,18 @@ class ProductServiceTest {
 
     @Test void insertSavesProductWhenNameIsUnique() {
         Product product = new Product(null, "Book", "Description", 10.0, "");
-        when(repository.existsByName("Book")).thenReturn(false);
+        when(repository.existsByNameIgnoreCase("Book")).thenReturn(false);
         when(repository.save(product)).thenReturn(product);
 
         assertSame(product, service.insert(product));
 
-        verify(repository).existsByName("Book");
+        verify(repository).existsByNameIgnoreCase("Book");
         verify(repository).save(product);
     }
 
     @Test void insertThrowsBusinessExceptionWhenNameAlreadyExists() {
         Product product = new Product(null, "Book", "Description", 10.0, "");
-        when(repository.existsByName("Book")).thenReturn(true);
+        when(repository.existsByNameIgnoreCase("Book")).thenReturn(true);
 
         BusinessException exception = assertThrows(
                 BusinessException.class,
@@ -59,7 +59,7 @@ class ProductServiceTest {
         );
 
         assertEquals("Product already exists.", exception.getMessage());
-        verify(repository).existsByName("Book");
+        verify(repository).existsByNameIgnoreCase("Book");
         verify(repository, never()).save(any(Product.class));
     }
 }

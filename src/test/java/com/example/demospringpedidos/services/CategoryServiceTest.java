@@ -43,7 +43,6 @@ class CategoryServiceTest {
     @Test void insertSavesCategoryWhenNameIsUnique() {
         Category category = new Category(null, "Electronics");
 
-        when(repository.findAll()).thenReturn(List.of(new Category(1L, "Books")));
         when(repository.save(category)).thenReturn(category);
 
         assertSame(category, service.insert(category));
@@ -69,7 +68,6 @@ class CategoryServiceTest {
         Category input = new Category(null, "Electronics");
 
         when(repository.getReferenceById(1L)).thenReturn(entity);
-        when(repository.findAll()).thenReturn(List.of(entity));
         when(repository.save(entity)).thenReturn(entity);
 
         Category result = service.update(1L, input);

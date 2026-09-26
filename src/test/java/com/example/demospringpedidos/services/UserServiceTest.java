@@ -52,7 +52,7 @@ class UserServiceTest {
 
     @Test void insertRejectsExistingEmail() {
         User user = new User(null, "Maria", "maria@test.com", "999", "secret");
-        when(repository.existsByEmail(user.getEmail())).thenReturn(true);
+        when(repository.existsByEmailIgnoreCase(user.getEmail())).thenReturn(true);
 
         BusinessException exception = assertThrows(BusinessException.class, () -> service.insert(user));
 
