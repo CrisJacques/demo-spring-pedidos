@@ -2,6 +2,7 @@ package com.example.demospringpedidos.services;
 
 import com.example.demospringpedidos.entities.Product;
 import com.example.demospringpedidos.repositories.ProductRepository;
+import com.example.demospringpedidos.services.exceptions.BusinessException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +25,13 @@ public class ProductService {
     public Product findById(Long id){
         Optional<Product> obj = repository.findById(id);
         return obj.get();
+    }
+
+    public Product insert(Product product) {
+        if (repository.existsByName(product.getName())) {
+            throw new BusinessException("Product already exists.");
+        }
+        return repository.save(product);
     }
 
 }

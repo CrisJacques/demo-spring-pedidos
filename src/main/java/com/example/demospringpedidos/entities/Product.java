@@ -11,6 +11,8 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -26,11 +28,17 @@ public class Product implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Schema(description = "Identificador único do produto", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
-    @Schema(description = "Nome do produto", example = "The Lord of the Rings")
+    @NotBlank
+    @Schema(description = "Nome do produto", example = "The Lord of the Rings",
+            requiredMode = Schema.RequiredMode.REQUIRED)
     private String name;
-    @Schema(description = "Descrição detalhada do produto", example = "Lorem ipsum dolor sit amet, consectetur.")
+    @NotBlank
+    @Schema(description = "Descrição detalhada do produto", example = "Lorem ipsum dolor sit amet, consectetur.",
+            requiredMode = Schema.RequiredMode.REQUIRED)
     private String description;
-    @Schema(description = "Preço unitário", example = "90.5", minimum = "0")
+    @NotNull
+    @Schema(description = "Preço unitário", example = "90.5", minimum = "0",
+            requiredMode = Schema.RequiredMode.REQUIRED)
     private Double price;
     @Schema(description = "URL da imagem do produto", example = "https://example.com/images/lord-of-the-rings.jpg")
     private String imgUrl;
