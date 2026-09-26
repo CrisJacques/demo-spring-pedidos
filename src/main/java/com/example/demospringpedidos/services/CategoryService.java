@@ -68,7 +68,7 @@ public class CategoryService {
         try {
             repository.deleteById(id);
         } catch (DataIntegrityViolationException e) {
-            throw new DatabaseException("Categoria possui produtos associados");
+            throw new DatabaseException("Category has associated products");
         }
     }
 
