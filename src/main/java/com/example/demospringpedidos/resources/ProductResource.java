@@ -75,6 +75,8 @@ public class ProductResource {
             @ApiResponse(responseCode = "201", description = "Produto criado com sucesso",
                     content = @Content(schema = @Schema(implementation = Product.class))),
             @ApiResponse(responseCode = "400", description = "Campos obrigatórios estão faltando",
+                    content = @Content(schema = @Schema(implementation = StandardError.class))),
+            @ApiResponse(responseCode = "422", description = "Produto já existe",
                     content = @Content(schema = @Schema(implementation = StandardError.class)))
     })
     @PostMapping
