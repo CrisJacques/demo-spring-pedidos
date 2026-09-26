@@ -2,6 +2,7 @@ package com.example.demospringpedidos.services;
 
 import com.example.demospringpedidos.entities.User;
 import com.example.demospringpedidos.repositories.UserRepository;
+import com.example.demospringpedidos.services.exceptions.BusinessException;
 import com.example.demospringpedidos.services.exceptions.DatabaseException;
 import com.example.demospringpedidos.services.exceptions.ResourceNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
@@ -49,6 +50,16 @@ class UserServiceTest {
         verify(repository).save(user);
     }
 
+    @Test void insertRejectsExistingEmail() {
+        User user = new User(null, "Maria", "maria@test.com", "999", "secret");
+        when(repository.existsByEmail(user.getEmail())).thenReturn(true);
+
+        BusinessException exception = assertThrows(BusinessException.class, () -> service.insert(user));
+
+        assertEquals("Email already exists.", exception.getMessage());
+        verify(repository, never()).save(any(User.class));
+    }
+
     @Test void deleteRemovesExistingUser() {
         when(repository.findById(1L)).thenReturn(Optional.of(new User()));
         service.delete(1L);
@@ -65,7 +76,7 @@ class UserServiceTest {
         when(repository.findById(1L)).thenReturn(Optional.of(new User()));
         doThrow(new DataIntegrityViolationException("constraint")).when(repository).deleteById(1L);
         DatabaseException exception = assertThrows(DatabaseException.class, () -> service.delete(1L));
-        assertEquals("Usuário possui pedidos associados", exception.getMessage());
+        assertEquals("User has associated orders.", exception.getMessage());
     }
 
     @Test void updateChangesEditableFieldsAndPreservesPassword() {

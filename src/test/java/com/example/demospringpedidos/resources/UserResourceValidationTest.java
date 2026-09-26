@@ -3,6 +3,7 @@ package com.example.demospringpedidos.resources;
 import com.example.demospringpedidos.entities.User;
 import com.example.demospringpedidos.resources.exceptions.ResourceExceptionHandler;
 import com.example.demospringpedidos.services.UserService;
+import com.example.demospringpedidos.services.exceptions.BusinessException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +18,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
@@ -113,5 +115,18 @@ class UserResourceValidationTest {
                                 {"name":"User","email":"user@example.com","phone":"999999999","password":"123456"}
                                 """))
                 .andExpect(status().isCreated());
+    }
+
+    @Test
+    void postRejectsExistingEmail() throws Exception {
+        when(service.insert(any(User.class))).thenThrow(new BusinessException("Email already exists."));
+
+        mockMvc.perform(post("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"User","email":"user@example.com","phone":"999999999","password":"123456"}
+                                """))
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.message").value("Email already exists."));
     }
 }
