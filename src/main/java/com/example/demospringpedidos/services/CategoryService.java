@@ -1,7 +1,6 @@
 package com.example.demospringpedidos.services;
 
 import com.example.demospringpedidos.entities.Category;
-import com.example.demospringpedidos.entities.User;
 import com.example.demospringpedidos.repositories.CategoryRepository;
 import com.example.demospringpedidos.services.exceptions.BusinessException;
 import com.example.demospringpedidos.services.exceptions.DatabaseException;
@@ -33,11 +32,10 @@ public class CategoryService {
     }
 
     public Category insert(Category obj) {
-        if (isNewCategory(obj.getName())) {
-            return repository.save(obj);
-        } else{
+        if (repository.existsByNameIgnoreCase(obj.getName())) {
             throw new BusinessException("Category already exists");
         }
+        return repository.save(obj);
     }
 
     public Category update(Long id, Category obj) {
@@ -50,17 +48,11 @@ public class CategoryService {
     }
 
     private Category updateData(Category entity, Category obj) {
-        if (isNewCategory(obj.getName())) {
-            entity.setName(obj.getName());
-            return repository.save(entity);
-        } else{
+        if (repository.existsByNameIgnoreCase(obj.getName())) {
             throw new BusinessException("New name for category already exists");
         }
-    }
-
-    private boolean isNewCategory(String categoryName) {
-        List<Category> categories = findAll();
-        return categories.stream().map(Category::getName).noneMatch(name -> name.equals(categoryName));
+        entity.setName(obj.getName());
+        return repository.save(entity);
     }
 
     public void delete(Long id) {
