@@ -2,6 +2,7 @@ package com.example.demospringpedidos.services;
 
 import com.example.demospringpedidos.entities.User;
 import com.example.demospringpedidos.repositories.UserRepository;
+import com.example.demospringpedidos.services.exceptions.BusinessException;
 import com.example.demospringpedidos.services.exceptions.DatabaseException;
 import com.example.demospringpedidos.services.exceptions.ResourceNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
@@ -33,6 +34,9 @@ public class UserService {
     }
 
     public User insert(User obj) {
+        if (repository.existsByEmail(obj.getEmail())) {
+            throw new BusinessException("Email already exists.");
+        }
         return repository.save(obj);
     }
 
@@ -41,7 +45,7 @@ public class UserService {
         try {
             repository.deleteById(id);
         } catch (DataIntegrityViolationException e) {
-            throw new DatabaseException("Usuário possui pedidos associados");
+            throw new DatabaseException("User has associated orders.");
         }
     }
 

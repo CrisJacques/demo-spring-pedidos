@@ -77,7 +77,11 @@ public class UserResource {
     @Operation(summary = "Cadastrar usuário", description = "Cria um novo usuário e retorna o recurso criado.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Usuário criado com sucesso",
-                    content = @Content(schema = @Schema(implementation = User.class)))
+                    content = @Content(schema = @Schema(implementation = User.class))),
+            @ApiResponse(responseCode = "400", description = "Campos obrigatórios estão faltando",
+                    content = @Content(schema = @Schema(implementation = StandardError.class))),
+            @ApiResponse(responseCode = "422", description = "E-mail já existe",
+                    content = @Content(schema = @Schema(implementation = StandardError.class)))
     })
     @PostMapping
     public ResponseEntity<User> insert(@io.swagger.v3.oas.annotations.parameters.RequestBody(
