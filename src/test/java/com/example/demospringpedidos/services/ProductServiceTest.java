@@ -2,6 +2,7 @@ package com.example.demospringpedidos.services;
 
 import com.example.demospringpedidos.entities.Product;
 import com.example.demospringpedidos.repositories.ProductRepository;
+import com.example.demospringpedidos.services.exceptions.BusinessException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -35,5 +36,30 @@ class ProductServiceTest {
     @Test void findByIdThrowsWhenProductIsMissing() {
         when(repository.findById(1L)).thenReturn(Optional.empty());
         assertThrows(NoSuchElementException.class, () -> service.findById(1L));
+    }
+
+    @Test void insertSavesProductWhenNameIsUnique() {
+        Product product = new Product(null, "Book", "Description", 10.0, "");
+        when(repository.existsByName("Book")).thenReturn(false);
+        when(repository.save(product)).thenReturn(product);
+
+        assertSame(product, service.insert(product));
+
+        verify(repository).existsByName("Book");
+        verify(repository).save(product);
+    }
+
+    @Test void insertThrowsBusinessExceptionWhenNameAlreadyExists() {
+        Product product = new Product(null, "Book", "Description", 10.0, "");
+        when(repository.existsByName("Book")).thenReturn(true);
+
+        BusinessException exception = assertThrows(
+                BusinessException.class,
+                () -> service.insert(product)
+        );
+
+        assertEquals("Product already exists.", exception.getMessage());
+        verify(repository).existsByName("Book");
+        verify(repository, never()).save(any(Product.class));
     }
 }
