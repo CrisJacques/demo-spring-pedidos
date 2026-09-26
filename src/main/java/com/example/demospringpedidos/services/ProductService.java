@@ -28,7 +28,7 @@ public class ProductService {
     }
 
     public Product insert(Product product) {
-        if (repository.existsByName(product.getName())) {
+        if (repository.existsByNameIgnoreCase(product.getName())) {
             throw new BusinessException("Product already exists.");
         }
         return repository.save(product);
