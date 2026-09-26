@@ -8,6 +8,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -24,14 +25,18 @@ public class User implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Desta forma, o id será AUTO INCREMENT no banco de dados (dá certo na maioria dos bancos de dados, mas pode ser necessário usar outra estratégia em alguns casos)
     @Schema(description = "Identificador único do usuário", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
-    @Schema(description = "Nome completo do usuário", example = "Maria Brown")
+    @NotBlank
+    @Schema(description = "Nome completo do usuário", example = "Maria Brown", requiredMode = Schema.RequiredMode.REQUIRED)
     private String name;
-    @Schema(description = "E-mail do usuário", example = "maria@gmail.com")
+    @NotBlank
+    @Schema(description = "E-mail do usuário", example = "maria@gmail.com", requiredMode = Schema.RequiredMode.REQUIRED)
     private String email;
-    @Schema(description = "Telefone para contato", example = "988888888")
+    @NotBlank
+    @Schema(description = "Telefone para contato", example = "988888888", requiredMode = Schema.RequiredMode.REQUIRED)
     private String phone;
+    @NotBlank
     @Schema(description = "Senha do usuário. Nunca é retornada nas respostas.", example = "123456",
-            accessMode = Schema.AccessMode.WRITE_ONLY)
+            accessMode = Schema.AccessMode.WRITE_ONLY, requiredMode = Schema.RequiredMode.REQUIRED)
     private String password;
 
     @JsonIgnore// Isso é importante para evitar loop infinito na serialização de json feita pelo Jackson, porque um usuário tem pedidos, mas o pedido tem um usuário associado (o @JsonIgnore pode ser colocado aqui ou lá na classe Order, depende de o que é mais interessante ver ou não no json de resposta da API)
