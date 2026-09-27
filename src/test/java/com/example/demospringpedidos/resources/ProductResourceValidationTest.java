@@ -44,7 +44,7 @@ class ProductResourceValidationTest {
     }
 
     @Test
-    void postRejectsMissingRequiredFields() throws Exception {
+    void postRejectsMissingName() throws Exception {
         mockMvc.perform(post("/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -53,6 +53,11 @@ class ProductResourceValidationTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Validation error"));
 
+        verifyNoInteractions(service);
+    }
+
+    @Test
+    void postRejectsMissingDescription() throws Exception {
         mockMvc.perform(post("/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -60,6 +65,11 @@ class ProductResourceValidationTest {
                                 """))
                 .andExpect(status().isBadRequest());
 
+        verifyNoInteractions(service);
+    }
+
+    @Test
+    void postRejectsMissingPrice() throws Exception {
         mockMvc.perform(post("/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -71,7 +81,7 @@ class ProductResourceValidationTest {
     }
 
     @Test
-    void postRejectsBlankNameAndDescription() throws Exception {
+    void postRejectsBlankName() throws Exception {
         mockMvc.perform(post("/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -79,12 +89,43 @@ class ProductResourceValidationTest {
                                 """))
                 .andExpect(status().isBadRequest());
 
+        verifyNoInteractions(service);
+    }
+
+    @Test
+    void postRejectsBlankDescription() throws Exception {
         mockMvc.perform(post("/products")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"name":"Product","description":"  ","price":10.0}
                                 """))
                 .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(service);
+    }
+
+    @Test
+    void postRejectsZeroPrice() throws Exception {
+        mockMvc.perform(post("/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"Product","description":"Description","price":0}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("price: Price must be greater than zero"));
+
+        verifyNoInteractions(service);
+    }
+
+    @Test
+    void postRejectsNegativePrice() throws Exception {
+        mockMvc.perform(post("/products")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"Product","description":"Description","price":-1}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("price: Price must be greater than zero"));
 
         verifyNoInteractions(service);
     }
