@@ -47,8 +47,8 @@ public class TestConfig implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         // Está sendo colocado null no id dos objetos abaixo, porque o próprio banco de dados irá gerá-los
-        User u1 = new User(null, "Maria Brown", "maria@gmail.com", "988888888", "123456");
-        User u2 = new User(null, "Alex Green", "alex@gmail.com", "977777777", "123456");
+        User u1 = new User(null, "Maria Brown", "maria@gmail.com", "988888888", "Abcdefg1");
+        User u2 = new User(null, "Alex Green", "alex@gmail.com", "977777777", "Abcdefg1");
         userRepository.saveAll(Arrays.asList(u1, u2));
 
         Order o1 = new Order(null, Instant.parse("2019-06-20T19:53:07Z"), OrderStatus.PAID, u1);
