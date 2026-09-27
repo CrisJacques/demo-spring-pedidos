@@ -34,8 +34,11 @@ public class ResourceExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<StandardError> validationError(MethodArgumentNotValidException e, HttpServletRequest request) {
         HttpStatus status = HttpStatus.BAD_REQUEST;
-        String error = "Required fields are missing";
-        StandardError err = new StandardError(Instant.now(), status.value(), "Validation error", error, request.getRequestURI());
+        String error = "Validation error";
+        String message = String.join("; ", e.getBindingResult().getFieldErrors().stream()
+                .map(err -> err.getField() + ": " + err.getDefaultMessage())
+                .toList());
+        StandardError err = new StandardError(Instant.now(), status.value(), error, message, request.getRequestURI());
         return ResponseEntity.status(status).body(err);
     }
 
