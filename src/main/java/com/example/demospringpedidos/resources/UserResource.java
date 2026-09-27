@@ -78,7 +78,7 @@ public class UserResource {
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Usuário criado com sucesso",
                     content = @Content(schema = @Schema(implementation = User.class))),
-            @ApiResponse(responseCode = "400", description = "Campos obrigatórios estão faltando",
+            @ApiResponse(responseCode = "400", description = "Campos obrigatórios estão faltando ou possuem valores inválidos",
                     content = @Content(schema = @Schema(implementation = StandardError.class))),
             @ApiResponse(responseCode = "422", description = "E-mail já existe",
                     content = @Content(schema = @Schema(implementation = StandardError.class)))
@@ -93,7 +93,7 @@ public class UserResource {
                       "name": "João da Silva",
                       "email": "joao@example.com",
                       "phone": "999999999",
-                      "password": "123456"
+                      "password": "Abcdefg1"
                     }
                     """))) @Valid @RequestBody User obj) {
         obj = service.insert(obj);
@@ -137,7 +137,7 @@ public class UserResource {
                                                          "email": "maria.brown@example.com",
                                                          "phone": "988888888"
                                                        }
-                                                       """))) @RequestBody User obj) {
+                                                       """))) @Valid @RequestBody User obj) {
         obj = service.update(id, obj);
         return ResponseEntity.ok().body(obj);
     }

@@ -8,7 +8,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -20,22 +22,33 @@ import java.util.Objects;
 // Neste caso, isso se tornou necessário porque User é uma palavra reservada do banco H2, então precisamos usar outro nome para a tabela para evitar conflito
 public class User implements Serializable {
     private static final long serialVersionUID = 1L;
+    private static final String REQUIRED_FIELD = "Field is required";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Desta forma, o id será AUTO INCREMENT no banco de dados (dá certo na maioria dos bancos de dados, mas pode ser necessário usar outra estratégia em alguns casos)
     @Schema(description = "Identificador único do usuário", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
-    @NotBlank
+
+    @NotBlank(message = REQUIRED_FIELD)
     @Schema(description = "Nome completo do usuário", example = "Maria Brown", requiredMode = Schema.RequiredMode.REQUIRED)
     private String name;
-    @NotBlank
-    @Schema(description = "E-mail do usuário", example = "maria@gmail.com", requiredMode = Schema.RequiredMode.REQUIRED)
+
+    @NotBlank(message = REQUIRED_FIELD)
+    @Email(message = "Not valid email")
+    @Schema(description = "E-mail do usuário (em formato válido)", example = "maria@gmail.com", requiredMode = Schema.RequiredMode.REQUIRED)
     private String email;
-    @NotBlank
-    @Schema(description = "Telefone para contato", example = "988888888", requiredMode = Schema.RequiredMode.REQUIRED)
+
+    @NotBlank(message = REQUIRED_FIELD)
+    @Pattern(regexp = "[0-9]+", message = "Phone must contain only numbers")
+    @Schema(description = "Telefone para contato (apenas números)", example = "988888888", requiredMode = Schema.RequiredMode.REQUIRED)
     private String phone;
-    @NotBlank
-    @Schema(description = "Senha do usuário. Nunca é retornada nas respostas.", example = "123456",
+
+    @NotBlank(message = REQUIRED_FIELD)
+    @Pattern(
+            regexp = "^(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z]).{8,}$",
+            message = "The password must be at least 8 characters long, including a number, an uppercase letter, and a lowercase letter."
+    )
+    @Schema(description = "Senha do usuário. Nunca é retornada nas respostas. Deve possuir no mínimo 8 caracteres, incluindo um número, uma letra maiúscula e uma letra minúscula", example = "Abcdefg1",
             accessMode = Schema.AccessMode.WRITE_ONLY, requiredMode = Schema.RequiredMode.REQUIRED)
     private String password;
 
