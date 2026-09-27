@@ -8,6 +8,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -23,7 +24,8 @@ public class Category implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Schema(description = "Identificador único da categoria", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
-    @Schema(description = "Nome da categoria", example = "Electronics")
+    @NotBlank
+    @Schema(description = "Nome da categoria", example = "Electronics", requiredMode = Schema.RequiredMode.REQUIRED)
     private String name;
 
     @JsonIgnore // Para evitar loop infinito na hora de o Jackson montar o json da resposta, pois uma categoria pode ter
