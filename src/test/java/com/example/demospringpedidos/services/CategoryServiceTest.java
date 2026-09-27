@@ -52,7 +52,7 @@ class CategoryServiceTest {
     @Test void insertThrowsBusinessExceptionWhenCategoryAlreadyExists() {
         Category category = new Category(null, "Books");
 
-        when(repository.findAll()).thenReturn(List.of(new Category(1L, "Books")));
+        when(repository.existsByNameIgnoreCase("Books")).thenReturn(true);
 
         BusinessException exception = assertThrows(
                 BusinessException.class,
@@ -94,10 +94,7 @@ class CategoryServiceTest {
         Category input = new Category(null, "Electronics");
 
         when(repository.getReferenceById(1L)).thenReturn(entity);
-        when(repository.findAll()).thenReturn(List.of(
-                entity,
-                new Category(2L, "Electronics")
-        ));
+        when(repository.existsByNameIgnoreCase("Electronics")).thenReturn(true);
 
         BusinessException exception = assertThrows(
                 BusinessException.class,
