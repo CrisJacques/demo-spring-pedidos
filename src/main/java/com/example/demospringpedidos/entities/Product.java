@@ -13,6 +13,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -23,23 +24,30 @@ import java.util.Set;
 @Table(name = "tb_product")
 public class Product implements Serializable {
     private static final long serialVersionUID = 1L;
+    private static final String REQUIRED_FIELD = "Field is required";
+    private static final String NOT_NULL = "Field can not be null";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Schema(description = "Identificador único do produto", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
-    @NotBlank
+
+    @NotBlank(message = REQUIRED_FIELD)
     @Schema(description = "Nome do produto", example = "The Lord of the Rings",
             requiredMode = Schema.RequiredMode.REQUIRED)
     private String name;
-    @NotBlank
+
+    @NotBlank(message = REQUIRED_FIELD)
     @Schema(description = "Descrição detalhada do produto", example = "Lorem ipsum dolor sit amet, consectetur.",
             requiredMode = Schema.RequiredMode.REQUIRED)
     private String description;
-    @NotNull
+
+    @NotNull(message = NOT_NULL)
+    @Positive(message = "Price must be greater than zero")
     @Schema(description = "Preço unitário", example = "90.5", minimum = "0",
             requiredMode = Schema.RequiredMode.REQUIRED)
     private Double price;
+
     @Schema(description = "URL da imagem do produto", example = "https://example.com/images/lord-of-the-rings.jpg")
     private String imgUrl;
 
