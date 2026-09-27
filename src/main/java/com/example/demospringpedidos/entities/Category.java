@@ -19,12 +19,14 @@ import java.util.Set;
 @Table(name = "tb_category")
 public class Category implements Serializable {
     private static final long serialVersionUID = 1L;
+    private static final String REQUIRED_FIELD = "Field is required";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Schema(description = "Identificador único da categoria", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
-    @NotBlank
+
+    @NotBlank(message = REQUIRED_FIELD)
     @Schema(description = "Nome da categoria", example = "Electronics", requiredMode = Schema.RequiredMode.REQUIRED)
     private String name;
 
