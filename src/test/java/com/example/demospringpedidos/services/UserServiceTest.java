@@ -79,9 +79,9 @@ class UserServiceTest {
         assertEquals("User has associated orders.", exception.getMessage());
     }
 
-    @Test void updateChangesEditableFieldsAndPreservesPassword() {
-        User entity = new User(1L, "Old", "old@test.com", "111", "keep");
-        User input = new User(null, "New", "new@test.com", "222", "replace-attempt");
+    @Test void updateChangesEditableFields() {
+        User entity = new User(1L, "Old", "old@test.com", "111", "Abcdefg1");
+        User input = new User(null, "New", "new@test.com", "222", "Abcdefg1-new");
         when(repository.getReferenceById(1L)).thenReturn(entity);
         when(repository.save(entity)).thenReturn(entity);
         User result = service.update(1L, input);
@@ -89,7 +89,18 @@ class UserServiceTest {
         assertEquals("New", entity.getName());
         assertEquals("new@test.com", entity.getEmail());
         assertEquals("222", entity.getPhone());
-        assertEquals("keep", entity.getPassword());
+        assertEquals("Abcdefg1-new", entity.getPassword());
+    }
+
+    @Test void updateRejectsExistingEmail() {
+        User input = new User(null, "New", "existing@test.com", "222", "Abcdefg1");
+        when(repository.existsByEmailIgnoreCase(input.getEmail())).thenReturn(true);
+
+        BusinessException exception = assertThrows(BusinessException.class, () -> service.update(1L, input));
+
+        assertEquals("Email already exists.", exception.getMessage());
+        verify(repository, never()).getReferenceById(anyLong());
+        verify(repository, never()).save(any(User.class));
     }
 
     @Test void updateConvertsMissingEntityToResourceNotFound() {

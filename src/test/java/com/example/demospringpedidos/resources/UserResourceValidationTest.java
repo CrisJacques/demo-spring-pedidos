@@ -18,6 +18,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -105,14 +106,74 @@ class UserResourceValidationTest {
     }
 
     @Test
-    void postAcceptsAllRequiredFields() throws Exception {
-        when(service.insert(any(User.class))).thenReturn(
-                new User(42L, "User", "user@example.com", "999999999", "123456"));
+    void postRejectsInvalidEmailPhoneAndPassword() throws Exception {
+        mockMvc.perform(post("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"User","email":"invalid-email","phone":"999999999","password":"Abcdefg1"}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("email: Not valid email"));
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"name":"User","email":"user@example.com","phone":"999999999","password":"123456"}
+                                {"name":"User","email":"user@example.com","phone":"999-999","password":"Abcdefg1"}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("phone: Phone must contain only numbers"));
+
+        mockMvc.perform(post("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"User","email":"user@example.com","phone":"999999999","password":"password"}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(
+                        "password: The password must be at least 8 characters long, including a number, an uppercase letter, and a lowercase letter."));
+
+        verifyNoInteractions(service);
+    }
+
+    @Test
+    void putRejectsInvalidEmailPhoneAndPassword() throws Exception {
+        mockMvc.perform(put("/users/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"User","email":"invalid-email","phone":"999999999","password":"Abcdefg1"}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("email: Not valid email"));
+
+        mockMvc.perform(put("/users/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"User","email":"user@example.com","phone":"999-999","password":"Abcdefg1"}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("phone: Phone must contain only numbers"));
+
+        mockMvc.perform(put("/users/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"User","email":"user@example.com","phone":"999999999","password":"password"}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(
+                        "password: The password must be at least 8 characters long, including a number, an uppercase letter, and a lowercase letter."));
+
+        verifyNoInteractions(service);
+    }
+
+    @Test
+    void postAcceptsAllRequiredFields() throws Exception {
+        when(service.insert(any(User.class))).thenReturn(
+                new User(42L, "User", "user@example.com", "999999999", "Abcdefg1"));
+
+        mockMvc.perform(post("/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"User","email":"user@example.com","phone":"999999999","password":"Abcdefg1"}
                                 """))
                 .andExpect(status().isCreated());
     }
@@ -124,7 +185,7 @@ class UserResourceValidationTest {
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"name":"User","email":"user@example.com","phone":"999999999","password":"123456"}
+                                {"name":"User","email":"user@example.com","phone":"999999999","password":"Abcdefg1"}
                                 """))
                 .andExpect(status().isUnprocessableContent())
                 .andExpect(jsonPath("$.message").value("Email already exists."));
