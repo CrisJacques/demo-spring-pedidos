@@ -63,10 +63,11 @@ public class UserService {
             throw new BusinessException("Email already exists.");
         }
         User entity = repository.getReferenceById(id);
-        // Nem todos os atributos do objeto serão atualizados (id e password não serão atualizados)
+        // Nem todos os atributos do objeto serão atualizados (id não será atualizado)
         entity.setName(obj.getName());
         entity.setEmail(obj.getEmail());
         entity.setPhone(obj.getPhone());
+        entity.setPassword(obj.getPassword());
         return entity;
     }
 
