@@ -21,7 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 class CategoryResourceValidationTest {
     private static final String VALIDATION_ERROR = "Validation error";
-    private static final String REQUIRED_FIELDS_MISSING = "Required fields are missing";
+    private static final String NAME_FIELD_IS_REQUIRED = "name: Field is required";
 
     @Mock
     private CategoryService service;
@@ -45,7 +45,7 @@ class CategoryResourceValidationTest {
                         .content("{}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value(VALIDATION_ERROR))
-                .andExpect(jsonPath("$.message").value(REQUIRED_FIELDS_MISSING));
+                .andExpect(jsonPath("$.message").value(NAME_FIELD_IS_REQUIRED));
 
         verifyNoInteractions(service);
     }
@@ -59,7 +59,7 @@ class CategoryResourceValidationTest {
                                 """))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value(VALIDATION_ERROR))
-                .andExpect(jsonPath("$.message").value(REQUIRED_FIELDS_MISSING));
+                .andExpect(jsonPath("$.message").value(NAME_FIELD_IS_REQUIRED));
 
         verifyNoInteractions(service);
     }
@@ -71,7 +71,7 @@ class CategoryResourceValidationTest {
                         .content("{}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value(VALIDATION_ERROR))
-                .andExpect(jsonPath("$.message").value(REQUIRED_FIELDS_MISSING));
+                .andExpect(jsonPath("$.message").value(NAME_FIELD_IS_REQUIRED));
 
         verifyNoInteractions(service);
     }
@@ -85,7 +85,7 @@ class CategoryResourceValidationTest {
                                 """))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value(VALIDATION_ERROR))
-                .andExpect(jsonPath("$.message").value(REQUIRED_FIELDS_MISSING));
+                .andExpect(jsonPath("$.message").value(NAME_FIELD_IS_REQUIRED));
 
         verifyNoInteractions(service);
     }
