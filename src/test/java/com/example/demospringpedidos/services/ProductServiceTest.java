@@ -1,5 +1,6 @@
 package com.example.demospringpedidos.services;
 
+import com.example.demospringpedidos.entities.Category;
 import com.example.demospringpedidos.entities.Product;
 import com.example.demospringpedidos.repositories.ProductRepository;
 import com.example.demospringpedidos.services.exceptions.BusinessException;
@@ -61,6 +62,55 @@ class ProductServiceTest {
 
         assertEquals("Product already exists.", exception.getMessage());
         verify(repository).existsByNameIgnoreCase("Book");
+        verify(repository, never()).save(any(Product.class));
+    }
+
+    @Test void updateChangesProductDataAndCategories() {
+        Product actualProduct = new Product(1L, "Old name", "Old description", 10.0, "old.jpg");
+        actualProduct.getCategories().add(new Category(1L, "Old category"));
+        Product newProductInfo = new Product(null, "New name", "New description", 25.0, "new.jpg");
+        newProductInfo.getCategories().add(new Category(2L, "New category"));
+
+        when(repository.existsByNameIgnoreCase("New name")).thenReturn(false);
+        when(repository.findById(1L)).thenReturn(Optional.of(actualProduct));
+        when(repository.save(actualProduct)).thenReturn(actualProduct);
+
+        Product result = service.update(1L, newProductInfo);
+
+        assertSame(actualProduct, result);
+        assertEquals("New name", actualProduct.getName());
+        assertEquals("New description", actualProduct.getDescription());
+        assertEquals(25.0, actualProduct.getPrice());
+        assertEquals("new.jpg", actualProduct.getImgUrl());
+        assertEquals(newProductInfo.getCategories(), actualProduct.getCategories());
+        verify(repository).existsByNameIgnoreCase("New name");
+        verify(repository).findById(1L);
+        verify(repository).save(actualProduct);
+    }
+
+    @Test void updateThrowsBusinessExceptionWhenNameAlreadyExists() {
+        Product newProductInfo = new Product(null, "Existing name", "Description", 25.0, "");
+        when(repository.existsByNameIgnoreCase("Existing name")).thenReturn(true);
+
+        BusinessException exception = assertThrows(
+                BusinessException.class,
+                () -> service.update(1L, newProductInfo)
+        );
+
+        assertEquals("New product name already exists.", exception.getMessage());
+        verify(repository).existsByNameIgnoreCase("Existing name");
+        verify(repository, never()).findById(anyLong());
+        verify(repository, never()).save(any(Product.class));
+    }
+
+    @Test void updateThrowsResourceNotFoundWhenProductDoesNotExist() {
+        Product newProductInfo = new Product(null, "New name", "Description", 25.0, "");
+        when(repository.existsByNameIgnoreCase("New name")).thenReturn(false);
+        when(repository.findById(9L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> service.update(9L, newProductInfo));
+
+        verify(repository).findById(9L);
         verify(repository, never()).save(any(Product.class));
     }
 }

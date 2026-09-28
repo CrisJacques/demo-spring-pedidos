@@ -17,6 +17,14 @@ class ProductValidationTest {
     }
 
     @Test
+    void acceptsValidProductWithIdAndCategoriesForUpdate() {
+        Product product = new Product(1L, "Book", "A useful book", 10.0, "");
+        product.getCategories().add(new Category(2L, "Books"));
+
+        assertTrue(validator.validate(product).isEmpty());
+    }
+
+    @Test
     void rejectsMissingOrBlankNameAndDescription() {
         assertInvalidField(new Product(null, null, "Description", 10.0, ""),
                 "name", "Field is required");

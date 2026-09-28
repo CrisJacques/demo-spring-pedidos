@@ -1,5 +1,6 @@
 package com.example.demospringpedidos.resources;
 
+import com.example.demospringpedidos.entities.Category;
 import com.example.demospringpedidos.entities.Product;
 import com.example.demospringpedidos.services.ProductService;
 import com.example.demospringpedidos.resources.exceptions.ResourceExceptionHandler;
@@ -21,7 +22,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -155,5 +158,83 @@ class ProductResourceValidationTest {
         assertEquals("Gaming notebook", submittedProduct.getDescription());
         assertEquals(2500.0, submittedProduct.getPrice());
         assertEquals("", submittedProduct.getImgUrl());
+    }
+
+    @Test
+    void putUpdatesProductAndReturnsUpdatedProduct() throws Exception {
+        Product updatedProduct = new Product(42L, "Notebook Pro", "Updated description", 2800.0, "notebook.jpg");
+        updatedProduct.getCategories().add(new Category(3L, "Electronics"));
+        when(service.update(eq(42L), any(Product.class))).thenReturn(updatedProduct);
+
+        mockMvc.perform(put("/products/42")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "name":"Notebook Pro",
+                                  "description":"Updated description",
+                                  "price":2800.0,
+                                  "imgUrl":"notebook.jpg",
+                                  "categories":[{"id":3}]
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(42))
+                .andExpect(jsonPath("$.name").value("Notebook Pro"))
+                .andExpect(jsonPath("$.description").value("Updated description"))
+                .andExpect(jsonPath("$.price").value(2800.0))
+                .andExpect(jsonPath("$.imgUrl").value("notebook.jpg"))
+                .andExpect(jsonPath("$.categories[0].id").value(3));
+
+        ArgumentCaptor<Product> productCaptor = ArgumentCaptor.forClass(Product.class);
+        verify(service).update(eq(42L), productCaptor.capture());
+        Product submittedProduct = productCaptor.getValue();
+        assertNull(submittedProduct.getId());
+        assertEquals("Notebook Pro", submittedProduct.getName());
+        assertEquals("Updated description", submittedProduct.getDescription());
+        assertEquals(2800.0, submittedProduct.getPrice());
+        assertEquals("notebook.jpg", submittedProduct.getImgUrl());
+        assertEquals(3L, submittedProduct.getCategories().iterator().next().getId());
+    }
+
+    @Test
+    void putRejectsInvalidPriceAndDoesNotCallService() throws Exception {
+        mockMvc.perform(put("/products/42")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"Notebook","description":"Description","price":0}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Validation error"))
+                .andExpect(jsonPath("$.message").value("price: Price must be greater than zero"));
+
+        verifyNoInteractions(service);
+    }
+
+    @Test
+    void putRejectsMissingNameAndDoesNotCallService() throws Exception {
+        mockMvc.perform(put("/products/42")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"description":"Description","price":10.0}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Validation error"))
+                .andExpect(jsonPath("$.message").value("name: Field is required"));
+
+        verifyNoInteractions(service);
+    }
+
+    @Test
+    void putRejectsMissingDescriptionAndDoesNotCallService() throws Exception {
+        mockMvc.perform(put("/products/42")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"name":"Notebook","price":100.0}
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Validation error"))
+                .andExpect(jsonPath("$.message").value("description: Field is required"));
+
+        verifyNoInteractions(service);
     }
 }
