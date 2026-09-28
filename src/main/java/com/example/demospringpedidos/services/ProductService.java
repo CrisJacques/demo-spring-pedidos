@@ -3,6 +3,7 @@ package com.example.demospringpedidos.services;
 import com.example.demospringpedidos.entities.Product;
 import com.example.demospringpedidos.repositories.ProductRepository;
 import com.example.demospringpedidos.services.exceptions.BusinessException;
+import com.example.demospringpedidos.services.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +25,7 @@ public class ProductService {
 
     public Product findById(Long id){
         Optional<Product> obj = repository.findById(id);
-        return obj.get();
+        return obj.orElseThrow(() -> new ResourceNotFoundException(id));
     }
 
     public Product insert(Product product) {
@@ -32,6 +33,24 @@ public class ProductService {
             throw new BusinessException("Product already exists.");
         }
         return repository.save(product);
+    }
+
+    public Product update(Long id, Product newProductInfo) {
+        if (repository.existsByNameIgnoreCase(newProductInfo.getName())) {
+            throw new BusinessException("New product name already exists.");
+        }
+        return repository.save(updateData(id, newProductInfo));
+    }
+
+    private Product updateData(Long id, Product newProductInfo) {
+        Product actualProduct = findById(id);
+        actualProduct.setName(newProductInfo.getName());
+        actualProduct.setDescription(newProductInfo.getDescription());
+        actualProduct.setPrice(newProductInfo.getPrice());
+        actualProduct.setImgUrl(newProductInfo.getImgUrl());
+        actualProduct.getCategories().clear();
+        actualProduct.getCategories().addAll(newProductInfo.getCategories());
+        return actualProduct;
     }
 
 }

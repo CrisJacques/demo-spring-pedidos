@@ -1,7 +1,6 @@
 package com.example.demospringpedidos.resources;
 
 import com.example.demospringpedidos.entities.Product;
-import com.example.demospringpedidos.entities.Product;
 import com.example.demospringpedidos.resources.exceptions.StandardError;
 import com.example.demospringpedidos.services.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -74,7 +73,7 @@ public class ProductResource {
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Produto criado com sucesso",
                     content = @Content(schema = @Schema(implementation = Product.class))),
-            @ApiResponse(responseCode = "400", description = "Campos obrigatórios estão faltando",
+            @ApiResponse(responseCode = "400", description = "Campos obrigatórios estão faltando ou possuem valores inválidos",
                     content = @Content(schema = @Schema(implementation = StandardError.class))),
             @ApiResponse(responseCode = "422", description = "Produto já existe",
                     content = @Content(schema = @Schema(implementation = StandardError.class)))
@@ -101,6 +100,39 @@ public class ProductResource {
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(obj.getId()).toUri();
         return ResponseEntity.created(uri).body(obj); // Retornando status code 201 com a uri do recurso criado no
         // header Location e o objeto inserido no body
+    }
+
+    @Operation(summary = "Atualizar produto", description = "Atualiza os dados de um produto existente.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Produto atualizado com sucesso",
+                    content = @Content(schema = @Schema(implementation = Product.class))),
+            @ApiResponse(responseCode = "400", description = "Campos obrigatórios estão faltando ou possuem valores inválidos",
+                    content = @Content(schema = @Schema(implementation = StandardError.class))),
+            @ApiResponse(responseCode = "404", description = "Recurso não encontrado",
+                    content = @Content(schema = @Schema(implementation = StandardError.class)))
+    })
+    @PutMapping(value = "/{id}")
+    public ResponseEntity<Product> update(@Parameter(description = "ID do produto", example = "1")
+                                       @PathVariable Long id,
+                                       @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                                               required = true, description = "Dados atualizados do produto",
+                                               content = @Content(mediaType = "application/json",
+                                                       schema = @Schema(implementation = Product.class),
+                                                       examples = @ExampleObject(value = """
+                                                               {
+                                                                 "name": "Notebook Gamer",
+                                                                 "description": "Notebook para jogos e trabalho.",
+                                                                 "price": 6550.99,
+                                                                 "imgUrl": "",
+                                                                 "categories": [
+                                                                   {
+                                                                     "id": 3
+                                                                   }
+                                                                 ]
+                                                               }
+                                                       """))) @Valid @RequestBody Product obj) {
+        obj = service.update(id, obj);
+        return ResponseEntity.ok().body(obj);
     }
 
 }
