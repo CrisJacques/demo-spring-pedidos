@@ -3,8 +3,10 @@ package com.example.demospringpedidos.services;
 import com.example.demospringpedidos.entities.Product;
 import com.example.demospringpedidos.repositories.ProductRepository;
 import com.example.demospringpedidos.services.exceptions.BusinessException;
+import com.example.demospringpedidos.services.exceptions.DatabaseException;
 import com.example.demospringpedidos.services.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -51,6 +53,15 @@ public class ProductService {
         actualProduct.getCategories().clear();
         actualProduct.getCategories().addAll(newProductInfo.getCategories());
         return actualProduct;
+    }
+
+    public void delete(Long id) {
+        findById(id);// Vai retornar ResourceNotFoundException se não encontrar produto no banco com o id informado
+        try {
+            repository.deleteById(id);
+        } catch (DataIntegrityViolationException e) {
+            throw new DatabaseException("Product has associated orders.");
+        }
     }
 
 }

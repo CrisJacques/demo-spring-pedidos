@@ -135,4 +135,19 @@ public class ProductResource {
         return ResponseEntity.ok().body(obj);
     }
 
+    @Operation(summary = "Excluir produto", description = "Remove um produto pelo identificador.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Produto removido com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Recurso não encontrado",
+                    content = @Content(schema = @Schema(implementation = StandardError.class))),
+            @ApiResponse(responseCode = "400", description = "Erro de banco de dados",
+                    content = @Content(schema = @Schema(implementation = StandardError.class)))
+    })
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<Void> delete(@Parameter(description = "ID do produto", example = "1")
+                                       @PathVariable Long id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
 }
