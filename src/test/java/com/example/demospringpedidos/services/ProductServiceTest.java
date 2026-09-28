@@ -4,12 +4,14 @@ import com.example.demospringpedidos.entities.Category;
 import com.example.demospringpedidos.entities.Product;
 import com.example.demospringpedidos.repositories.ProductRepository;
 import com.example.demospringpedidos.services.exceptions.BusinessException;
+import com.example.demospringpedidos.services.exceptions.DatabaseException;
 import com.example.demospringpedidos.services.exceptions.ResourceNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.List;
 import java.util.Optional;
@@ -112,5 +114,35 @@ class ProductServiceTest {
 
         verify(repository).findById(9L);
         verify(repository, never()).save(any(Product.class));
+    }
+
+    @Test void deleteRemovesExistingProduct() {
+        Product product = new Product(1L, "Book", "Description", 10.0, "");
+        when(repository.findById(1L)).thenReturn(Optional.of(product));
+
+        service.delete(1L);
+
+        verify(repository).findById(1L);
+        verify(repository).deleteById(1L);
+    }
+
+    @Test void deleteThrowsWhenProductDoesNotExist() {
+        when(repository.findById(9L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> service.delete(9L));
+
+        verify(repository).findById(9L);
+        verify(repository, never()).deleteById(anyLong());
+    }
+
+    @Test void deleteConvertsIntegrityViolationToDatabaseException() {
+        Product product = new Product(1L, "Book", "Description", 10.0, "");
+        when(repository.findById(1L)).thenReturn(Optional.of(product));
+        doThrow(new DataIntegrityViolationException("constraint")).when(repository).deleteById(1L);
+
+        DatabaseException exception = assertThrows(DatabaseException.class, () -> service.delete(1L));
+
+        assertEquals("Product has associated orders.", exception.getMessage());
+        verify(repository).deleteById(1L);
     }
 }
