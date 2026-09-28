@@ -3,6 +3,7 @@ package com.example.demospringpedidos.services;
 import com.example.demospringpedidos.entities.Product;
 import com.example.demospringpedidos.repositories.ProductRepository;
 import com.example.demospringpedidos.services.exceptions.BusinessException;
+import com.example.demospringpedidos.services.exceptions.ResourceNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -35,7 +36,7 @@ class ProductServiceTest {
 
     @Test void findByIdThrowsWhenProductIsMissing() {
         when(repository.findById(1L)).thenReturn(Optional.empty());
-        assertThrows(NoSuchElementException.class, () -> service.findById(1L));
+        assertThrows(ResourceNotFoundException.class, () -> service.findById(1L));
     }
 
     @Test void insertSavesProductWhenNameIsUnique() {
