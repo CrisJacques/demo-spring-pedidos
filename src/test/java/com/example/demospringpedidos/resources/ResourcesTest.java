@@ -106,6 +106,21 @@ class ResourcesTest {
         assertSame(list.get(0), orderResource.findById(1L).getBody());
     }
 
+    @Test void orderResourceInsertReturnsCreatedResourceAndLocation() {
+        Order order = new Order();
+        order.setId(42L);
+        when(orderService.insert(order)).thenReturn(order);
+        MockHttpServletRequest request = new MockHttpServletRequest("POST", "/orders");
+        RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
+
+        var response = orderResource.insert(order);
+
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals("/orders/42", response.getHeaders().getLocation().getPath());
+        assertSame(order, response.getBody());
+        verify(orderService).insert(order);
+    }
+
     @Test void userResourceReturnsListAndItem() {
         List<User> list = List.of(new User(1L, "Maria", "maria@test.com", "999", "secret"));
         when(userService.findAll()).thenReturn(list);
