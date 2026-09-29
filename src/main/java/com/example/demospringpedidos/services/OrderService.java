@@ -46,6 +46,21 @@ public class OrderService {
 
     @Transactional
     public Order insert(Order request) {
+        validateRequest(request);
+
+        User client = userService.findById(request.getClient().getId());
+        Order order = new Order(null, Instant.now(), OrderStatus.WAITING_PAYMENT, client);
+
+        List<OrderItem> items = createOrderItems(request, order);
+
+        order.getItems().addAll(items);
+        Order savedOrder = repository.save(order);
+        orderItemRepository.saveAll(items);
+
+        return savedOrder;
+    }
+
+    private void validateRequest(Order request) {
         if (request == null) {
             throw new BusinessException("Order body is required.");
         }
@@ -55,36 +70,33 @@ public class OrderService {
         if (request.getItems() == null || request.getItems().isEmpty()) {
             throw new BusinessException("At least one item is required.");
         }
+        for (OrderItem requestedItem : request.getItems()) {
+            validateOrderItem(requestedItem);
+        }
+    }
 
-        User client = userService.findById(request.getClient().getId());
-        List<Product> products = new ArrayList<>();
-        List<Integer> quantities = new ArrayList<>();
+    private void validateOrderItem(OrderItem requestedItem) {
+        if (requestedItem == null) {
+            throw new BusinessException("Order items cannot be null.");
+        }
+        if (requestedItem.getProduct() == null || requestedItem.getProduct().getId() == null) {
+            throw new BusinessException("Product id is required for each item.");
+        }
+        if (requestedItem.getQuantity() == null || requestedItem.getQuantity() <= 0) {
+            throw new BusinessException("Item quantity must be greater than zero.");
+        }
+    }
+
+    private List<OrderItem> createOrderItems(Order request, Order createdOrder) {
+        List<OrderItem> items = new ArrayList<>();
 
         for (OrderItem requestedItem : request.getItems()) {
-            if (requestedItem == null) {
-                throw new BusinessException("Order items cannot be null.");
-            }
-            if (requestedItem.getProduct() == null || requestedItem.getProduct().getId() == null) {
-                throw new BusinessException("Product id is required for each item.");
-            }
-            if (requestedItem.getQuantity() == null || requestedItem.getQuantity() <= 0) {
-                throw new BusinessException("Item quantity must be greater than zero.");
-            }
-            products.add(productService.findById(requestedItem.getProduct().getId()));
-            quantities.add(requestedItem.getQuantity());
-        }
-
-        Order order = new Order(null, Instant.now(), OrderStatus.WAITING_PAYMENT, client);
-        Order savedOrder = repository.save(order);
-        List<OrderItem> items = new ArrayList<>();
-        for (int i = 0; i < products.size(); i++) {
-            Product product = products.get(i);
-            OrderItem item = new OrderItem(savedOrder, product, quantities.get(i), product.getPrice());
-            savedOrder.getItems().add(item);
+            Product product = productService.findById(requestedItem.getProduct().getId());
+            OrderItem item = new OrderItem(createdOrder, product, requestedItem.getQuantity(), product.getPrice());
             items.add(item);
         }
-        orderItemRepository.saveAll(items);
-        return savedOrder;
+
+        return items;
     }
 
 }
