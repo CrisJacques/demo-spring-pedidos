@@ -19,6 +19,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -55,7 +56,7 @@ class OrderServiceTest {
                 new User(1L, "Untrusted", "untrusted@example.com", "0", "Abcdefg1"));
         request.getItems().add(new OrderItem(request, new Product(1L, null, null, -1.0, ""), 2, 0.01));
         when(userService.findById(1L)).thenReturn(client);
-        when(productService.findById(1L)).thenReturn(product);
+        when(productService.findAllById(Set.of(1L))).thenReturn(List.of(product));
         when(repository.save(any(Order.class))).thenAnswer(invocation -> {
             Order saved = invocation.getArgument(0);
             saved.setId(42L);
@@ -74,6 +75,24 @@ class OrderServiceTest {
         assertSame(product, item.getProduct());
         assertEquals(2, item.getQuantity());
         assertEquals(90.5, item.getPrice());
+        verify(orderItemRepository).saveAll(anyList());
+    }
+
+    @Test void insertLoadsProductsInOneBatch() {
+        User client = new User(1L, "Maria Brown", "maria@gmail.com", "988888888", "Abcdefg1");
+        Product book = new Product(1L, "Book", "Description", 10.0, "");
+        Product pen = new Product(2L, "Pen", "Description", 2.0, "");
+        Order request = new Order(null, null, null, new User(1L, null, null, null, null));
+        request.getItems().add(new OrderItem(request, new Product(1L, null, null, null, null), 2, null));
+        request.getItems().add(new OrderItem(request, new Product(2L, null, null, null, null), 1, null));
+        when(userService.findById(1L)).thenReturn(client);
+        when(productService.findAllById(Set.of(1L, 2L))).thenReturn(List.of(book, pen));
+        when(repository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Order result = service.insert(request);
+
+        assertEquals(2, result.getItems().size());
+        verify(productService, times(1)).findAllById(Set.of(1L, 2L));
         verify(orderItemRepository).saveAll(anyList());
     }
 
@@ -120,7 +139,7 @@ class OrderServiceTest {
 
         doReturn(new User(99L, "Client", "client@example.com", "999", "Abcdefg1"))
                 .when(userService).findById(99L);
-        when(productService.findById(1L)).thenThrow(new ResourceNotFoundException(1L));
+        when(productService.findAllById(Set.of(1L))).thenThrow(new ResourceNotFoundException(1L));
         assertThrows(ResourceNotFoundException.class, () -> service.insert(request));
         verify(repository, never()).save(any(Order.class));
     }

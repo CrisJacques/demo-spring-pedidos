@@ -16,6 +16,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import java.util.List;
 import java.util.Optional;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -40,6 +41,25 @@ class ProductServiceTest {
     @Test void findByIdThrowsWhenProductIsMissing() {
         when(repository.findById(1L)).thenReturn(Optional.empty());
         assertThrows(ResourceNotFoundException.class, () -> service.findById(1L));
+    }
+
+    @Test void findAllByIdReturnsProductsFromRepository() {
+        Set<Long> ids = Set.of(1L, 2L);
+        List<Product> products = List.of(
+                new Product(1L, "Book", "Description", 10.0, ""),
+                new Product(2L, "Pen", "Description", 2.0, ""));
+        when(repository.findAllById(ids)).thenReturn(products);
+
+        assertSame(products, service.findAllById(ids));
+        verify(repository).findAllById(ids);
+    }
+
+    @Test void findAllByIdThrowsWhenAProductIsMissing() {
+        Set<Long> ids = Set.of(1L, 2L);
+        when(repository.findAllById(ids)).thenReturn(List.of(
+                new Product(1L, "Book", "Description", 10.0, "")));
+
+        assertThrows(ResourceNotFoundException.class, () -> service.findAllById(ids));
     }
 
     @Test void insertSavesProductWhenNameIsUnique() {
