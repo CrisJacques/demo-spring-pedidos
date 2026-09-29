@@ -8,14 +8,18 @@ import com.example.demospringpedidos.entities.enums.OrderStatus;
 import com.example.demospringpedidos.repositories.OrderItemRepository;
 import com.example.demospringpedidos.repositories.OrderRepository;
 import com.example.demospringpedidos.services.exceptions.BusinessException;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 // A anotação @Component permite que a classe seja registrada no Component Registration do Spring, habilitando-a para ser injetada como dependência usando o @Autowired
@@ -88,10 +92,20 @@ public class OrderService {
     }
 
     private List<OrderItem> createOrderItems(Order request, Order createdOrder) {
+        Set<Long> productIds = new LinkedHashSet<>();
+        for (OrderItem requestedItem : request.getItems()) {
+            productIds.add(requestedItem.getProduct().getId());
+        }
+
+        Map<Long, Product> productsById = new LinkedHashMap<>();
+        for (Product product : productService.findAllById(productIds)) {
+            productsById.put(product.getId(), product);
+        }
+
         List<OrderItem> items = new ArrayList<>();
 
         for (OrderItem requestedItem : request.getItems()) {
-            Product product = productService.findById(requestedItem.getProduct().getId());
+            Product product = productsById.get(requestedItem.getProduct().getId());
             OrderItem item = new OrderItem(createdOrder, product, requestedItem.getQuantity(), product.getPrice());
             items.add(item);
         }

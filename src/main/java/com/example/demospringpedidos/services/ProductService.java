@@ -9,8 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 // A anotação @Component permite que a classe seja registrada no Component Registration do Spring, habilitando-a para ser injetada como dependência usando o @Autowired
@@ -28,6 +30,22 @@ public class ProductService {
     public Product findById(Long id){
         Optional<Product> obj = repository.findById(id);
         return obj.orElseThrow(() -> new ResourceNotFoundException(id));
+    }
+
+    public List<Product> findAllById(Set<Long> ids) {
+        List<Product> products = repository.findAllById(ids);
+        Set<Long> foundIds = new HashSet<>();
+        for (Product product : products) {
+            foundIds.add(product.getId());
+        }
+
+        for (Long id : ids) {
+            if (!foundIds.contains(id)) {
+                throw new ResourceNotFoundException(id);
+            }
+        }
+
+        return products;
     }
 
     public Product insert(Product product) {
