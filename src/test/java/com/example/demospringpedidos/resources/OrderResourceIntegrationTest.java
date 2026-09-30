@@ -47,14 +47,10 @@ class OrderResourceIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                  "id": 999,
-                                  "moment": "2000-01-01T00:00:00Z",
-                                  "orderStatus": "PAID",
-                                  "client": {"id": %d},
+                                  "clientId": %d,
                                   "items": [
-                                    {"product": {"id": %d}, "quantity": 2, "price": 0.01}
-                                  ],
-                                  "payment": {"moment": "2000-01-01T00:00:00Z"}
+                                    {"productId": %d, "quantity": 2}
+                                  ]
                                 }
                                 """.formatted(client.getId(), product.getId())))
                 .andExpect(status().isCreated())

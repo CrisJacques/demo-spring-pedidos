@@ -5,6 +5,8 @@ import com.example.demospringpedidos.entities.OrderItem;
 import com.example.demospringpedidos.entities.Product;
 import com.example.demospringpedidos.entities.User;
 import com.example.demospringpedidos.entities.enums.OrderStatus;
+import com.example.demospringpedidos.dto.OrderItemRequestDto;
+import com.example.demospringpedidos.dto.OrderRequestDto;
 import com.example.demospringpedidos.repositories.OrderItemRepository;
 import com.example.demospringpedidos.repositories.OrderRepository;
 import com.example.demospringpedidos.services.exceptions.BusinessException;
@@ -15,7 +17,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.NoSuchElementException;
@@ -52,9 +53,7 @@ class OrderServiceTest {
     @Test void insertUsesStoredClientAndProductDataAndSetsServerOwnedFields() {
         User client = new User(1L, "Maria Brown", "maria@gmail.com", "988888888", "Abcdefg1");
         Product product = new Product(1L, "The Lord of the Rings", "Description", 90.5, "");
-        Order request = new Order(999L, Instant.parse("2000-01-01T00:00:00Z"), OrderStatus.PAID,
-                new User(1L, "Untrusted", "untrusted@example.com", "0", "Abcdefg1"));
-        request.getItems().add(new OrderItem(request, new Product(1L, null, null, -1.0, ""), 2, 0.01));
+        OrderRequestDto request = new OrderRequestDto(1L, List.of(new OrderItemRequestDto(1L, 2)));
         when(userService.findById(1L)).thenReturn(client);
         when(productService.findAllById(Set.of(1L))).thenReturn(List.of(product));
         when(repository.save(any(Order.class))).thenAnswer(invocation -> {
@@ -67,7 +66,7 @@ class OrderServiceTest {
 
         assertEquals(42L, result.getId());
         assertSame(client, result.getClient());
-        assertNotEquals(Instant.parse("2000-01-01T00:00:00Z"), result.getMoment());
+        assertNotNull(result.getMoment());
         assertEquals(OrderStatus.WAITING_PAYMENT, result.getOrderStatus());
         assertEquals(1, result.getItems().size());
         OrderItem item = result.getItems().iterator().next();
@@ -82,9 +81,9 @@ class OrderServiceTest {
         User client = new User(1L, "Maria Brown", "maria@gmail.com", "988888888", "Abcdefg1");
         Product book = new Product(1L, "Book", "Description", 10.0, "");
         Product pen = new Product(2L, "Pen", "Description", 2.0, "");
-        Order request = new Order(null, null, null, new User(1L, null, null, null, null));
-        request.getItems().add(new OrderItem(request, new Product(1L, null, null, null, null), 2, null));
-        request.getItems().add(new OrderItem(request, new Product(2L, null, null, null, null), 1, null));
+        OrderRequestDto request = new OrderRequestDto(1L, List.of(
+                new OrderItemRequestDto(1L, 2),
+                new OrderItemRequestDto(2L, 1)));
         when(userService.findById(1L)).thenReturn(client);
         when(productService.findAllById(Set.of(1L, 2L))).thenReturn(List.of(book, pen));
         when(repository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -97,7 +96,7 @@ class OrderServiceTest {
     }
 
     @Test void insertRejectsMissingClientId() {
-        Order request = new Order();
+        OrderRequestDto request = new OrderRequestDto(null, List.of(new OrderItemRequestDto(1L, 1)));
 
         BusinessException exception = assertThrows(BusinessException.class, () -> service.insert(request));
 
@@ -109,9 +108,7 @@ class OrderServiceTest {
         BusinessException missingRequest = assertThrows(BusinessException.class, () -> service.insert(null));
         assertEquals("Order body is required.", missingRequest.getMessage());
 
-        Order request = new Order(null, null, null, new User(1L, null, null, null, null));
-        request.getItems().add(new OrderItem(request, new Product(1L, null, null, null, null), 0, null));
-        when(userService.findById(1L)).thenReturn(new User(1L, "Maria", "maria@example.com", "999", "Abcdefg1"));
+        OrderRequestDto request = new OrderRequestDto(1L, List.of(new OrderItemRequestDto(1L, 0)));
 
         BusinessException invalidQuantity = assertThrows(BusinessException.class, () -> service.insert(request));
         assertEquals("Item quantity must be greater than zero.", invalidQuantity.getMessage());
@@ -119,9 +116,7 @@ class OrderServiceTest {
     }
 
     @Test void insertRejectsMissingProductWithoutSavingOrder() {
-        Order request = new Order(null, null, null, new User(1L, null, null, null, null));
-        request.getItems().add(new OrderItem(request, new Product(), 1, 1.0));
-        when(userService.findById(1L)).thenReturn(new User(1L, "Maria", "maria@example.com", "999", "Abcdefg1"));
+        OrderRequestDto request = new OrderRequestDto(1L, List.of(new OrderItemRequestDto(null, 1)));
 
         assertThrows(BusinessException.class, () -> service.insert(request));
 
@@ -130,8 +125,7 @@ class OrderServiceTest {
     }
 
     @Test void insertPropagatesMissingClientOrProduct() {
-        Order request = new Order(null, null, null, new User(99L, null, null, null, null));
-        request.getItems().add(new OrderItem(request, new Product(1L, null, null, null, null), 1, null));
+        OrderRequestDto request = new OrderRequestDto(99L, List.of(new OrderItemRequestDto(1L, 1)));
         when(userService.findById(99L)).thenThrow(new ResourceNotFoundException(99L));
 
         assertThrows(ResourceNotFoundException.class, () -> service.insert(request));

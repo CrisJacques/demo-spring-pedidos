@@ -4,6 +4,8 @@ import com.example.demospringpedidos.entities.Category;
 import com.example.demospringpedidos.entities.Order;
 import com.example.demospringpedidos.entities.Product;
 import com.example.demospringpedidos.entities.User;
+import com.example.demospringpedidos.dto.OrderItemRequestDto;
+import com.example.demospringpedidos.dto.OrderRequestDto;
 import com.example.demospringpedidos.services.CategoryService;
 import com.example.demospringpedidos.services.OrderService;
 import com.example.demospringpedidos.services.ProductService;
@@ -109,16 +111,17 @@ class ResourcesTest {
     @Test void orderResourceInsertReturnsCreatedResourceAndLocation() {
         Order order = new Order();
         order.setId(42L);
-        when(orderService.insert(order)).thenReturn(order);
+        OrderRequestDto requestDto = new OrderRequestDto(1L, List.of(new OrderItemRequestDto(3L, 2)));
+        when(orderService.insert(requestDto)).thenReturn(order);
         MockHttpServletRequest request = new MockHttpServletRequest("POST", "/orders");
         RequestContextHolder.setRequestAttributes(new ServletRequestAttributes(request));
 
-        var response = orderResource.insert(order);
+        var response = orderResource.insert(requestDto);
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertEquals("/orders/42", response.getHeaders().getLocation().getPath());
         assertSame(order, response.getBody());
-        verify(orderService).insert(order);
+        verify(orderService).insert(requestDto);
     }
 
     @Test void userResourceReturnsListAndItem() {
