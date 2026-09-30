@@ -15,8 +15,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import java.util.NoSuchElementException;
@@ -31,6 +35,7 @@ class OrderServiceTest {
     @Mock OrderItemRepository orderItemRepository;
     @Mock UserService userService;
     @Mock ProductService productService;
+    @Spy Clock clock = Clock.fixed(Instant.parse("2026-09-29T12:00:00Z"), ZoneOffset.UTC);
     @InjectMocks OrderService service;
 
     @Test void findAllReturnsRepositoryData() {
@@ -66,7 +71,7 @@ class OrderServiceTest {
 
         assertEquals(42L, result.getId());
         assertSame(client, result.getClient());
-        assertNotNull(result.getMoment());
+        assertEquals(Instant.parse("2026-09-29T12:00:00Z"), result.getMoment());
         assertEquals(OrderStatus.WAITING_PAYMENT, result.getOrderStatus());
         assertEquals(1, result.getItems().size());
         OrderItem item = result.getItems().iterator().next();

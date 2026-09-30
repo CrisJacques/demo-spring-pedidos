@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -41,6 +42,9 @@ public class OrderService {
     @Autowired
     private ProductService productService;
 
+    @Autowired
+    private Clock clock;
+
     public List<Order> findAll() {
         return repository.findAll();
     }
@@ -55,7 +59,7 @@ public class OrderService {
         validateRequest(request);
 
         User client = userService.findById(request.clientId());
-        Order order = new Order(null, Instant.now(), OrderStatus.WAITING_PAYMENT, client);
+        Order order = new Order(null, clock.instant(), OrderStatus.WAITING_PAYMENT, client);
 
         List<OrderItem> items = createOrderItems(request, order);
 
