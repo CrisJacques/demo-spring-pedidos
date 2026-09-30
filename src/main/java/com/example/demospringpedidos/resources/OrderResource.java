@@ -15,12 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
@@ -75,7 +70,9 @@ public class OrderResource {
                               "payment": null,
                               "total": 181.0
                             }
-                            """)))
+                            """))),
+            @ApiResponse(responseCode = "404", description = "Recurso não encontrado",
+                    content = @Content(schema = @Schema(implementation = StandardError.class)))
     })
     @GetMapping(value = "/{id}")
     public ResponseEntity<Order> findById(@Parameter(description = "ID do pedido", example = "1")
@@ -115,6 +112,19 @@ public class OrderResource {
                 .buildAndExpand(createdOrder.getId())
                 .toUri();
         return ResponseEntity.created(uri).body(createdOrder);
+    }
+
+    @Operation(summary = "Excluir pedido", description = "Remove um pedido pelo identificador.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Pedido removido com sucesso"),
+            @ApiResponse(responseCode = "404", description = "Recurso não encontrado",
+                    content = @Content(schema = @Schema(implementation = StandardError.class))),
+    })
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<Void> delete(@Parameter(description = "ID do pedido", example = "1")
+                                       @PathVariable Long id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
     }
 
 }
