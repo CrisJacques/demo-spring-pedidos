@@ -33,7 +33,7 @@ class OrderResourceIntegrationTest {
     private ProductRepository productRepository;
 
     @Test
-    void postCreatesOrderFromSeededClientAndProductAndExistingGetRoutesStillWork() throws Exception {
+    void postAggregatesRepeatedProductItemsAndExistingGetRoutesStillWork() throws Exception {
         User client = userRepository.findAll().stream()
                 .filter(user -> "Maria Brown".equals(user.getName()))
                 .findFirst()
@@ -49,10 +49,11 @@ class OrderResourceIntegrationTest {
                                 {
                                   "clientId": %d,
                                   "items": [
-                                    {"productId": %d, "quantity": 2}
+                                    {"productId": %d, "quantity": 1},
+                                    {"productId": %d, "quantity": 1}
                                   ]
                                 }
-                                """.formatted(client.getId(), product.getId())))
+                                """.formatted(client.getId(), product.getId(), product.getId())))
                 .andExpect(status().isCreated())
                 .andExpect(header().string("Location", endsWith("/orders/4")))
                 .andExpect(jsonPath("$.id").value(4))

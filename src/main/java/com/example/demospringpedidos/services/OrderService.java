@@ -16,11 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 // A anotação @Component permite que a classe seja registrada no Component Registration do Spring, habilitando-a para ser injetada como dependência usando o @Autowired
@@ -52,11 +50,12 @@ public class OrderService {
     @Transactional
     public Order insert(OrderRequestDto request) {
         validateRequest(request);
+        Map<Long, Integer> quantitiesByProduct = aggregateQuantities(request);
 
         User client = userService.findById(request.clientId());
         Order order = new Order(null, clock.instant(), OrderStatus.WAITING_PAYMENT, client);
 
-        List<OrderItem> items = createOrderItems(request, order);
+        List<OrderItem> items = createOrderItems(quantitiesByProduct, order);
 
         order.getItems().addAll(items);
 
@@ -90,22 +89,34 @@ public class OrderService {
         }
     }
 
-    private List<OrderItem> createOrderItems(OrderRequestDto request, Order createdOrder) {
-        Set<Long> productIds = new LinkedHashSet<>();
+    private Map<Long, Integer> aggregateQuantities(OrderRequestDto request) {
+        Map<Long, Integer> quantitiesByProduct = new LinkedHashMap<>();
         for (OrderItemRequestDto requestedItem : request.items()) {
-            productIds.add(requestedItem.productId());
+            Integer currentQuantity = quantitiesByProduct.get(requestedItem.productId());
+            if (currentQuantity == null) {
+                quantitiesByProduct.put(requestedItem.productId(), requestedItem.quantity());
+            } else {
+                if (requestedItem.quantity() > Integer.MAX_VALUE - currentQuantity) {
+                    throw new BusinessException("Total quantity for a product exceeds the supported limit.");
+                }
+                quantitiesByProduct.put(requestedItem.productId(), currentQuantity + requestedItem.quantity());
+            }
         }
 
+        return quantitiesByProduct;
+    }
+
+    private List<OrderItem> createOrderItems(Map<Long, Integer> quantitiesByProduct, Order createdOrder) {
         Map<Long, Product> productsById = new LinkedHashMap<>();
-        for (Product product : productService.findAllById(productIds)) {
+        for (Product product : productService.findAllById(quantitiesByProduct.keySet())) {
             productsById.put(product.getId(), product);
         }
 
         List<OrderItem> items = new ArrayList<>();
 
-        for (OrderItemRequestDto requestedItem : request.items()) {
-            Product product = productsById.get(requestedItem.productId());
-            OrderItem item = new OrderItem(createdOrder, product, requestedItem.quantity(), product.getPrice());
+        for (Map.Entry<Long, Integer> requestedProduct : quantitiesByProduct.entrySet()) {
+            Product product = productsById.get(requestedProduct.getKey());
+            OrderItem item = new OrderItem(createdOrder, product, requestedProduct.getValue(), product.getPrice());
             items.add(item);
         }
 

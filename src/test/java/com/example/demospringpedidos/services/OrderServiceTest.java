@@ -7,7 +7,6 @@ import com.example.demospringpedidos.entities.User;
 import com.example.demospringpedidos.entities.enums.OrderStatus;
 import com.example.demospringpedidos.dto.OrderItemRequestDto;
 import com.example.demospringpedidos.dto.OrderRequestDto;
-import com.example.demospringpedidos.repositories.OrderItemRepository;
 import com.example.demospringpedidos.repositories.OrderRepository;
 import com.example.demospringpedidos.services.exceptions.BusinessException;
 import com.example.demospringpedidos.services.exceptions.ResourceNotFoundException;
@@ -32,7 +31,6 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
     @Mock OrderRepository repository;
-    @Mock OrderItemRepository orderItemRepository;
     @Mock UserService userService;
     @Mock ProductService productService;
     @Spy Clock clock = Clock.fixed(Instant.parse("2026-09-29T12:00:00Z"), ZoneOffset.UTC);
@@ -79,15 +77,16 @@ class OrderServiceTest {
         assertSame(product, item.getProduct());
         assertEquals(2, item.getQuantity());
         assertEquals(90.5, item.getPrice());
-        verify(orderItemRepository).saveAll(anyList());
+        verify(repository).save(any(Order.class));
     }
 
-    @Test void insertLoadsProductsInOneBatch() {
+    @Test void insertAggregatesRepeatedProductsAndLoadsProductsInOneBatch() {
         User client = new User(1L, "Maria Brown", "maria@gmail.com", "988888888", "Abcdefg1");
         Product book = new Product(1L, "Book", "Description", 10.0, "");
         Product pen = new Product(2L, "Pen", "Description", 2.0, "");
         OrderRequestDto request = new OrderRequestDto(1L, List.of(
                 new OrderItemRequestDto(1L, 2),
+                new OrderItemRequestDto(1L, 3),
                 new OrderItemRequestDto(2L, 1)));
         when(userService.findById(1L)).thenReturn(client);
         when(productService.findAllById(Set.of(1L, 2L))).thenReturn(List.of(book, pen));
@@ -96,8 +95,22 @@ class OrderServiceTest {
         Order result = service.insert(request);
 
         assertEquals(2, result.getItems().size());
+        assertSame(book, result.getItems().get(0).getProduct());
+        assertEquals(5, result.getItems().get(0).getQuantity());
+        assertSame(pen, result.getItems().get(1).getProduct());
+        assertEquals(1, result.getItems().get(1).getQuantity());
         verify(productService, times(1)).findAllById(Set.of(1L, 2L));
-        verify(orderItemRepository).saveAll(anyList());
+    }
+
+    @Test void insertRejectsAggregatedQuantityOverflowBeforeLookingUpEntities() {
+        OrderRequestDto request = new OrderRequestDto(1L, List.of(
+                new OrderItemRequestDto(1L, Integer.MAX_VALUE),
+                new OrderItemRequestDto(1L, 1)));
+
+        BusinessException exception = assertThrows(BusinessException.class, () -> service.insert(request));
+
+        assertEquals("Total quantity for a product exceeds the supported limit.", exception.getMessage());
+        verifyNoInteractions(userService, productService, repository);
     }
 
     @Test void insertRejectsMissingClientId() {
@@ -106,7 +119,7 @@ class OrderServiceTest {
         BusinessException exception = assertThrows(BusinessException.class, () -> service.insert(request));
 
         assertEquals("Client id is required.", exception.getMessage());
-        verifyNoInteractions(userService, productService, repository, orderItemRepository);
+        verifyNoInteractions(userService, productService, repository);
     }
 
     @Test void insertRejectsNullRequestAndNonPositiveQuantity() {
@@ -126,7 +139,6 @@ class OrderServiceTest {
         assertThrows(BusinessException.class, () -> service.insert(request));
 
         verify(repository, never()).save(any(Order.class));
-        verifyNoInteractions(orderItemRepository);
     }
 
     @Test void insertPropagatesMissingClientOrProduct() {
