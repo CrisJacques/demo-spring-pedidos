@@ -1,5 +1,7 @@
 package com.example.demospringpedidos.services;
 
+import com.example.demospringpedidos.dto.OrderItemRequestDto;
+import com.example.demospringpedidos.dto.OrderRequestDto;
 import com.example.demospringpedidos.entities.Order;
 import com.example.demospringpedidos.entities.OrderItem;
 import com.example.demospringpedidos.entities.Product;
@@ -49,10 +51,10 @@ public class OrderService {
     }
 
     @Transactional
-    public Order insert(Order request) {
+    public Order insert(OrderRequestDto request) {
         validateRequest(request);
 
-        User client = userService.findById(request.getClient().getId());
+        User client = userService.findById(request.clientId());
         Order order = new Order(null, Instant.now(), OrderStatus.WAITING_PAYMENT, client);
 
         List<OrderItem> items = createOrderItems(request, order);
@@ -64,37 +66,37 @@ public class OrderService {
         return savedOrder;
     }
 
-    private void validateRequest(Order request) {
+    private void validateRequest(OrderRequestDto request) {
         if (request == null) {
             throw new BusinessException("Order body is required.");
         }
-        if (request.getClient() == null || request.getClient().getId() == null) {
+        if (request.clientId() == null) {
             throw new BusinessException("Client id is required.");
         }
-        if (request.getItems() == null || request.getItems().isEmpty()) {
+        if (request.items() == null || request.items().isEmpty()) {
             throw new BusinessException("At least one item is required.");
         }
-        for (OrderItem requestedItem : request.getItems()) {
+        for (OrderItemRequestDto requestedItem : request.items()) {
             validateOrderItem(requestedItem);
         }
     }
 
-    private void validateOrderItem(OrderItem requestedItem) {
+    private void validateOrderItem(OrderItemRequestDto requestedItem) {
         if (requestedItem == null) {
             throw new BusinessException("Order items cannot be null.");
         }
-        if (requestedItem.getProduct() == null || requestedItem.getProduct().getId() == null) {
+        if (requestedItem.productId() == null) {
             throw new BusinessException("Product id is required for each item.");
         }
-        if (requestedItem.getQuantity() == null || requestedItem.getQuantity() <= 0) {
+        if (requestedItem.quantity() == null || requestedItem.quantity() <= 0) {
             throw new BusinessException("Item quantity must be greater than zero.");
         }
     }
 
-    private List<OrderItem> createOrderItems(Order request, Order createdOrder) {
+    private List<OrderItem> createOrderItems(OrderRequestDto request, Order createdOrder) {
         Set<Long> productIds = new LinkedHashSet<>();
-        for (OrderItem requestedItem : request.getItems()) {
-            productIds.add(requestedItem.getProduct().getId());
+        for (OrderItemRequestDto requestedItem : request.items()) {
+            productIds.add(requestedItem.productId());
         }
 
         Map<Long, Product> productsById = new LinkedHashMap<>();
@@ -104,9 +106,9 @@ public class OrderService {
 
         List<OrderItem> items = new ArrayList<>();
 
-        for (OrderItem requestedItem : request.getItems()) {
-            Product product = productsById.get(requestedItem.getProduct().getId());
-            OrderItem item = new OrderItem(createdOrder, product, requestedItem.getQuantity(), product.getPrice());
+        for (OrderItemRequestDto requestedItem : request.items()) {
+            Product product = productsById.get(requestedItem.productId());
+            OrderItem item = new OrderItem(createdOrder, product, requestedItem.quantity(), product.getPrice());
             items.add(item);
         }
 

@@ -1,5 +1,6 @@
 package com.example.demospringpedidos.resources;
 
+import com.example.demospringpedidos.dto.OrderRequestDto;
 import com.example.demospringpedidos.entities.Order;
 import com.example.demospringpedidos.resources.exceptions.StandardError;
 import com.example.demospringpedidos.services.OrderService;
@@ -11,14 +12,16 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
@@ -87,23 +90,25 @@ public class OrderResource {
                     content = @Content(schema = @Schema(implementation = Order.class))),
             @ApiResponse(responseCode = "404", description = "Cliente ou produto não encontrado",
                     content = @Content(schema = @Schema(implementation = StandardError.class))),
-            @ApiResponse(responseCode = "422", description = "Dados do pedido inválidos",
+            @ApiResponse(responseCode = "400", description = "Campos obrigatórios ausentes ou inválidos",
+                    content = @Content(schema = @Schema(implementation = StandardError.class))),
+            @ApiResponse(responseCode = "422", description = "Regra de negócio não atendida",
                     content = @Content(schema = @Schema(implementation = StandardError.class)))
     })
     @PostMapping
     public ResponseEntity<Order> insert(@io.swagger.v3.oas.annotations.parameters.RequestBody(
             required = true, description = "Cliente e produtos identificados por ID, com suas quantidades",
             content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = Order.class),
+                    schema = @Schema(implementation = OrderRequestDto.class),
                     examples = @ExampleObject(value = """
                             {
-                              "client": {"id": 1},
+                              "clientId": 1,
                               "items": [
-                                {"product": {"id": 1}, "quantity": 2},
-                                {"product": {"id": 3}, "quantity": 1}
+                                {"productId": 1, "quantity": 2},
+                                {"productId": 3, "quantity": 1}
                               ]
                             }
-                            """))) @org.springframework.web.bind.annotation.RequestBody Order request) {
+                            """))) @Valid @RequestBody OrderRequestDto request) {
         Order createdOrder = service.insert(request);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
