@@ -50,7 +50,26 @@ class OrderServiceTest {
 
     @Test void findByIdThrowsWhenOrderIsMissing() {
         when(repository.findById(1L)).thenReturn(Optional.empty());
-        assertThrows(NoSuchElementException.class, () -> service.findById(1L));
+        assertThrows(ResourceNotFoundException.class, () -> service.findById(1L));
+    }
+
+    @Test void deleteRemovesExistingOrder() {
+        Order order = new Order();
+        when(repository.findById(1L)).thenReturn(Optional.of(order));
+
+        service.delete(1L);
+
+        verify(repository).findById(1L);
+        verify(repository).deleteById(1L);
+    }
+
+    @Test void deleteDoesNotRemoveOrderWhenItDoesNotExist() {
+        when(repository.findById(9L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> service.delete(9L));
+
+        verify(repository).findById(9L);
+        verify(repository, never()).deleteById(anyLong());
     }
 
     @Test void insertUsesStoredClientAndProductDataAndSetsServerOwnedFields() {

@@ -5,6 +5,7 @@ import com.example.demospringpedidos.entities.enums.OrderStatus;
 import com.example.demospringpedidos.dto.OrderRequestDto;
 import com.example.demospringpedidos.resources.exceptions.ResourceExceptionHandler;
 import com.example.demospringpedidos.services.OrderService;
+import com.example.demospringpedidos.services.exceptions.ResourceNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,11 +21,14 @@ import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.hamcrest.Matchers.endsWith;
 
@@ -102,5 +106,25 @@ class OrderResourceValidationTest {
         assertEquals(1L, requestCaptor.getValue().clientId());
         assertEquals(3L, requestCaptor.getValue().items().get(0).productId());
         assertEquals(2, requestCaptor.getValue().items().get(0).quantity());
+    }
+
+    @Test
+    void deleteReturnsNoContentAndDelegatesToService() throws Exception {
+        mockMvc.perform(delete("/orders/42"))
+                .andExpect(status().isNoContent());
+
+        verify(service).delete(42L);
+    }
+
+    @Test
+    void deleteReturnsNotFoundWhenOrderDoesNotExist() throws Exception {
+        doThrow(new ResourceNotFoundException(42L)).when(service).delete(42L);
+
+        mockMvc.perform(delete("/orders/42"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.status").value(404))
+                .andExpect(jsonPath("$.path").value("/orders/42"));
+
+        verify(service).delete(42L);
     }
 }
