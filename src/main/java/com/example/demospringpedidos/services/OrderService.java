@@ -7,7 +7,6 @@ import com.example.demospringpedidos.entities.OrderItem;
 import com.example.demospringpedidos.entities.Product;
 import com.example.demospringpedidos.entities.User;
 import com.example.demospringpedidos.entities.enums.OrderStatus;
-import com.example.demospringpedidos.repositories.OrderItemRepository;
 import com.example.demospringpedidos.repositories.OrderRepository;
 import com.example.demospringpedidos.services.exceptions.BusinessException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -32,9 +30,6 @@ public class OrderService {
 
     @Autowired
     private OrderRepository repository;
-
-    @Autowired
-    private OrderItemRepository orderItemRepository;
 
     @Autowired
     private UserService userService;
@@ -64,10 +59,8 @@ public class OrderService {
         List<OrderItem> items = createOrderItems(request, order);
 
         order.getItems().addAll(items);
-        Order savedOrder = repository.save(order);
-        orderItemRepository.saveAll(items);
 
-        return savedOrder;
+        return repository.save(order);
     }
 
     private void validateRequest(OrderRequestDto request) {

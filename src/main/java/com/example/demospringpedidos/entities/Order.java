@@ -42,7 +42,7 @@ public class Order implements Serializable {
     @JoinColumn(name = "client_id") // Aqui configuramos o nome da chave estrangeira que será criada no banco de dados
     private User client;
 
-    @OneToMany(mappedBy = "id.order") // Tem que ser id.order porque o Order correspondente na classe OrderItem está dentro do atributo id
+    @OneToMany(mappedBy = "id.order", cascade = CascadeType.ALL) // Tem que ser id.order porque o Order correspondente na classe OrderItem está dentro do atributo id
     private List<OrderItem> items = new ArrayList<>();
 
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
