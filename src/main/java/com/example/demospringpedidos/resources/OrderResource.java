@@ -1,7 +1,9 @@
 package com.example.demospringpedidos.resources;
 
 import com.example.demospringpedidos.dto.OrderRequestDto;
+import com.example.demospringpedidos.dto.OrderUpdateRequestDto;
 import com.example.demospringpedidos.entities.Order;
+import com.example.demospringpedidos.entities.User;
 import com.example.demospringpedidos.resources.exceptions.StandardError;
 import com.example.demospringpedidos.services.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -71,7 +73,7 @@ public class OrderResource {
                               "total": 181.0
                             }
                             """))),
-            @ApiResponse(responseCode = "404", description = "Recurso não encontrado",
+            @ApiResponse(responseCode = "404", description = "Pedido não encontrado",
                     content = @Content(schema = @Schema(implementation = StandardError.class)))
     })
     @GetMapping(value = "/{id}")
@@ -114,10 +116,45 @@ public class OrderResource {
         return ResponseEntity.created(uri).body(createdOrder);
     }
 
+    @Operation(summary = "Atualizar pedido", description = "Atualiza os dados de um pedido existente, sobrescrevendo os valores com as informações fornecidas")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Pedido atualizado com sucesso",
+                    content = @Content(schema = @Schema(implementation = Order.class))),
+            @ApiResponse(responseCode = "404", description = "Pedido não encontrado",
+                    content = @Content(schema = @Schema(implementation = StandardError.class))),
+            @ApiResponse(responseCode = "422", description = "Regra de negócio não atendida",
+                    content = @Content(schema = @Schema(implementation = StandardError.class)))
+    })
+    @PutMapping(value = "/{id}")
+    public ResponseEntity<Order> update(@Parameter(description = "ID do pedido", example = "2")
+                                            @PathVariable Long id,
+                                        @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                                                required = true, description = "Dados atualizados do pedido",
+                                                content = @Content(mediaType = "application/json",
+                                                        schema = @Schema(implementation = OrderUpdateRequestDto.class),
+                                                        examples = @ExampleObject(value = """
+                                                                {
+                                                                  "orderStatus": 2,
+                                                                  "items": [
+                                                                    {
+                                                                      "productId": 1,
+                                                                      "quantity": 3
+                                                                    },
+                                                                    {
+                                                                      "productId": 3,
+                                                                      "quantity": 4
+                                                                    }
+                                                                  ]
+                                                                }
+                                                       """))) @Valid @RequestBody OrderUpdateRequestDto request) {
+        Order updatedOrder = service.update(id, request);
+        return ResponseEntity.ok().body(updatedOrder);
+    }
+
     @Operation(summary = "Excluir pedido", description = "Remove um pedido pelo identificador.")
     @ApiResponses({
             @ApiResponse(responseCode = "204", description = "Pedido removido com sucesso"),
-            @ApiResponse(responseCode = "404", description = "Recurso não encontrado",
+            @ApiResponse(responseCode = "404", description = "Pedido não encontrado",
                     content = @Content(schema = @Schema(implementation = StandardError.class))),
     })
     @DeleteMapping(value = "/{id}")

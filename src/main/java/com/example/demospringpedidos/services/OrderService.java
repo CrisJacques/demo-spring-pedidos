@@ -2,10 +2,8 @@ package com.example.demospringpedidos.services;
 
 import com.example.demospringpedidos.dto.OrderItemRequestDto;
 import com.example.demospringpedidos.dto.OrderRequestDto;
-import com.example.demospringpedidos.entities.Order;
-import com.example.demospringpedidos.entities.OrderItem;
-import com.example.demospringpedidos.entities.Product;
-import com.example.demospringpedidos.entities.User;
+import com.example.demospringpedidos.dto.OrderUpdateRequestDto;
+import com.example.demospringpedidos.entities.*;
 import com.example.demospringpedidos.entities.enums.OrderStatus;
 import com.example.demospringpedidos.repositories.OrderRepository;
 import com.example.demospringpedidos.services.exceptions.BusinessException;
@@ -51,7 +49,7 @@ public class OrderService {
     @Transactional
     public Order insert(OrderRequestDto request) {
         validateRequest(request);
-        Map<Long, Integer> quantitiesByProduct = aggregateQuantities(request);
+        Map<Long, Integer> quantitiesByProduct = aggregateQuantities(request.items());
 
         User client = userService.findById(request.clientId());
         Order order = new Order(null, clock.instant(), OrderStatus.WAITING_PAYMENT, client);
@@ -90,9 +88,9 @@ public class OrderService {
         }
     }
 
-    private Map<Long, Integer> aggregateQuantities(OrderRequestDto request) {
+    private Map<Long, Integer> aggregateQuantities(List<OrderItemRequestDto> requestedItems) {
         Map<Long, Integer> quantitiesByProduct = new LinkedHashMap<>();
-        for (OrderItemRequestDto requestedItem : request.items()) {
+        for (OrderItemRequestDto requestedItem : requestedItems) {
             Integer currentQuantity = quantitiesByProduct.get(requestedItem.productId());
             if (currentQuantity == null) {
                 quantitiesByProduct.put(requestedItem.productId(), requestedItem.quantity());
@@ -127,6 +125,35 @@ public class OrderService {
     public void delete(Long id){
         findById(id);
         repository.deleteById(id);
+    }
+
+    @Transactional
+    public Order update(Long id, OrderUpdateRequestDto request) {
+        Order orderFromDatabase = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException(id));
+
+        updateOrderItems(orderFromDatabase, request);
+        updateStatus(orderFromDatabase, request.orderStatus());
+
+        return repository.save(orderFromDatabase);
+    }
+
+    private void updateOrderItems(Order orderFromDatabase, OrderUpdateRequestDto request){
+        Map<Long, Integer> quantitiesByProduct = aggregateQuantities(request.items());
+        List<OrderItem> items = createOrderItems(quantitiesByProduct, orderFromDatabase);
+
+        orderFromDatabase.getItems().clear();
+
+        orderFromDatabase.getItems().addAll(items);
+
+    }
+
+    private void updateStatus(Order orderFromDatabase, int orderStatus) {
+        OrderStatus newOrderStatus = OrderStatus.valueOf(orderStatus);
+        orderFromDatabase.setOrderStatus(newOrderStatus);
+
+        if (newOrderStatus == OrderStatus.PAID && orderFromDatabase.getPayment() == null) {
+            orderFromDatabase.setPayment(new Payment(null, clock.instant(), orderFromDatabase));
+        }
     }
 
 }
