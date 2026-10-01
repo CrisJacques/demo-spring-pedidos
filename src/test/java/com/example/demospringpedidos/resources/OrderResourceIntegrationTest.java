@@ -2,6 +2,7 @@ package com.example.demospringpedidos.resources;
 
 import com.example.demospringpedidos.entities.Product;
 import com.example.demospringpedidos.entities.User;
+import com.example.demospringpedidos.repositories.OrderRepository;
 import com.example.demospringpedidos.repositories.ProductRepository;
 import com.example.demospringpedidos.repositories.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -12,9 +13,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.hamcrest.Matchers.endsWith;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -28,6 +31,9 @@ class OrderResourceIntegrationTest {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private OrderRepository orderRepository;
 
     @Autowired
     private ProductRepository productRepository;
@@ -77,5 +83,46 @@ class OrderResourceIntegrationTest {
         mockMvc.perform(get("/orders"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[?(@.id == 4)]").exists());
+    }
+
+    @Test
+    void putPaidOrderTwicePreservesExistingPayment() throws Exception {
+        Product book = productRepository.findAll().stream()
+                .filter(item -> "The Lord of the Rings".equals(item.getName()))
+                .findFirst()
+                .orElseThrow();
+        Product laptop = productRepository.findAll().stream()
+                .filter(item -> "Macbook Pro".equals(item.getName()))
+                .findFirst()
+                .orElseThrow();
+        String request = """
+                {
+                  "orderStatus": 2,
+                  "items": [
+                    {"productId": %d, "quantity": 3},
+                    {"productId": %d, "quantity": 4}
+                  ]
+                }
+                """.formatted(book.getId(), laptop.getId());
+
+        mockMvc.perform(put("/orders/2")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.orderStatus").value("PAID"))
+                .andExpect(jsonPath("$.payment.id").value(2));
+
+        var paymentAfterFirstUpdate = orderRepository.findById(2L).orElseThrow().getPayment();
+        var paymentMoment = paymentAfterFirstUpdate.getMoment();
+
+        mockMvc.perform(put("/orders/2")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(request))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.orderStatus").value("PAID"))
+                .andExpect(jsonPath("$.payment.id").value(paymentAfterFirstUpdate.getId()));
+
+        var paymentAfterSecondUpdate = orderRepository.findById(2L).orElseThrow().getPayment();
+        assertEquals(paymentMoment, paymentAfterSecondUpdate.getMoment());
     }
 }
