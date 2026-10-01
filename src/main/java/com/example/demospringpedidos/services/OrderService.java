@@ -15,9 +15,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 // A anotação @Component permite que a classe seja registrada no Component Registration do Spring, habilitando-a para ser injetada como dependência usando o @Autowired
@@ -139,12 +141,28 @@ public class OrderService {
 
     private void updateOrderItems(Order orderFromDatabase, OrderUpdateRequestDto request){
         Map<Long, Integer> quantitiesByProduct = aggregateQuantities(request.items());
-        List<OrderItem> items = createOrderItems(quantitiesByProduct, orderFromDatabase);
+        List<OrderItem> requestedItems = createOrderItems(quantitiesByProduct, orderFromDatabase);
+        Map<Long, OrderItem> existingItemsByProduct = new LinkedHashMap<>();
+        for (OrderItem existingItem : orderFromDatabase.getItems()) {
+            existingItemsByProduct.put(existingItem.getProduct().getId(), existingItem);
+        }
 
-        orderFromDatabase.getItems().clear();
+        Set<Long> requestedProductIds = new LinkedHashSet<>();
+        for (OrderItem requestedItem : requestedItems) {
+            Long productId = requestedItem.getProduct().getId();
+            requestedProductIds.add(productId);
 
-        orderFromDatabase.getItems().addAll(items);
+            OrderItem existingItem = existingItemsByProduct.get(productId);
+            if (existingItem == null) {
+                orderFromDatabase.getItems().add(requestedItem);
+            } else {
+                existingItem.setQuantity(requestedItem.getQuantity());
+                existingItem.setPrice(requestedItem.getPrice());
+            }
+        }
 
+        orderFromDatabase.getItems().removeIf(
+                item -> !requestedProductIds.contains(item.getProduct().getId()));
     }
 
     private void updateStatus(Order orderFromDatabase, int orderStatus) {

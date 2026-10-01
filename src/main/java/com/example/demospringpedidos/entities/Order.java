@@ -42,8 +42,9 @@ public class Order implements Serializable {
     @JoinColumn(name = "client_id") // Aqui configuramos o nome da chave estrangeira que será criada no banco de dados
     private User client;
 
-    @OneToMany(mappedBy = "id.order", cascade = CascadeType.ALL) // Tem que ser id.order porque o Order correspondente na classe OrderItem está dentro do atributo id
+    @OneToMany(mappedBy = "id.order", cascade = CascadeType.ALL, orphanRemoval = true) // Tem que ser id.order porque o Order correspondente na classe OrderItem está dentro do atributo id
     private List<OrderItem> items = new ArrayList<>();
+    //OrphanRemoval significa que se um item for removido da coleção items da entidade, o JPA irá removê-lo do banco (neste caso faz sentido porque um item de pedido só faz sentido existir se estiver associado a um pedido)
 
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
     // order é o nome do atributo que referencia a classe Order lá na classe Payment

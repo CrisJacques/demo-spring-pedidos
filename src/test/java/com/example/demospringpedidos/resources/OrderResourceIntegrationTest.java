@@ -5,6 +5,7 @@ import com.example.demospringpedidos.entities.User;
 import com.example.demospringpedidos.repositories.OrderRepository;
 import com.example.demospringpedidos.repositories.ProductRepository;
 import com.example.demospringpedidos.repositories.UserRepository;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -37,6 +38,9 @@ class OrderResourceIntegrationTest {
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private EntityManager entityManager;
 
     @Test
     void postAggregatesRepeatedProductItemsAndExistingGetRoutesStillWork() throws Exception {
@@ -124,5 +128,42 @@ class OrderResourceIntegrationTest {
 
         var paymentAfterSecondUpdate = orderRepository.findById(2L).orElseThrow().getPayment();
         assertEquals(paymentMoment, paymentAfterSecondUpdate.getMoment());
+    }
+
+    @Test
+    void putReplacesPersistedOrderItems() throws Exception {
+        Product replacement = productRepository.findAll().stream()
+                .filter(item -> "The Lord of the Rings".equals(item.getName()))
+                .findFirst()
+                .orElseThrow();
+
+        mockMvc.perform(put("/orders/3")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "orderStatus": 1,
+                                  "items": [
+                                    {"productId": %d, "quantity": 3}
+                                  ]
+                                }
+                                """.formatted(replacement.getId())))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items.length()").value(1))
+                .andExpect(jsonPath("$.items[0].product.id").value(replacement.getId()))
+                .andExpect(jsonPath("$.items[0].quantity").value(3));
+
+        entityManager.flush();
+        entityManager.clear();
+
+        var persistedOrder = orderRepository.findById(3L).orElseThrow();
+        assertEquals(1, persistedOrder.getItems().size());
+        assertEquals(replacement.getId(), persistedOrder.getItems().get(0).getProduct().getId());
+        assertEquals(3, persistedOrder.getItems().get(0).getQuantity());
+
+        mockMvc.perform(get("/orders/3"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items.length()").value(1))
+                .andExpect(jsonPath("$.items[0].product.id").value(replacement.getId()))
+                .andExpect(jsonPath("$.items[0].quantity").value(3));
     }
 }
