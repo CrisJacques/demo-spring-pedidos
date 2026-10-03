@@ -38,8 +38,8 @@ public class Order implements Serializable {
     private Integer orderStatus; // Mesmo o OrderStatus sendo um tipo enumerado (enum), internamente na classe trataremos ele como inteiro
     // para ficar mais claro que ele será salvo no banco de dados como um inteiro
 
-    @ManyToOne // Um cliente pode possuir muitos pedidos. Como esta classe é a do pedido, então aqui usamos ManyToOne
-    @JoinColumn(name = "client_id") // Aqui configuramos o nome da chave estrangeira que será criada no banco de dados
+    @ManyToOne(optional = false) // Um cliente pode possuir muitos pedidos. Como esta classe é a do pedido, então aqui usamos ManyToOne
+    @JoinColumn(name = "client_id", nullable = false) // Aqui configuramos o nome da chave estrangeira que será criada no banco de dados. Ela não pode ser nula (null), porque um pedido sempre deve estar associado a um cliente
     private User client;
 
     @OneToMany(mappedBy = "id.order", cascade = CascadeType.ALL, orphanRemoval = true) // Tem que ser id.order porque o Order correspondente na classe OrderItem está dentro do atributo id
