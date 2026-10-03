@@ -1,9 +1,10 @@
 package com.example.demospringpedidos.resources;
 
 import com.example.demospringpedidos.dto.OrderRequestDto;
+import com.example.demospringpedidos.dto.OrderMapper;
+import com.example.demospringpedidos.dto.OrderResponseDto;
 import com.example.demospringpedidos.dto.OrderUpdateRequestDto;
 import com.example.demospringpedidos.entities.Order;
-import com.example.demospringpedidos.entities.User;
 import com.example.demospringpedidos.resources.exceptions.StandardError;
 import com.example.demospringpedidos.services.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,6 +12,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -31,10 +33,15 @@ public class OrderResource {
     @Autowired
     private OrderService service;
 
+    @Autowired
+    private OrderMapper mapper;
+
     @Operation(summary = "Listar pedidos", description = "Retorna a lista completa de pedidos cadastrados.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Pedidos encontrados com sucesso",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+                    content = @Content(mediaType = "application/json",
+                            array = @ArraySchema(schema = @Schema(implementation = OrderResponseDto.class)),
+                            examples = @ExampleObject(value = """
                             [
                               {
                                 "id": 1,
@@ -54,15 +61,19 @@ public class OrderResource {
                             """)))
     })
     @GetMapping
-    public ResponseEntity<List<Order>> findAll() {
-        List<Order> list = service.findAll();
+    public ResponseEntity<List<OrderResponseDto>> findAll() {
+        List<OrderResponseDto> list = service.findAll().stream()
+                .map(mapper::toResponse)
+                .toList();
         return ResponseEntity.ok().body(list);
     }
 
     @Operation(summary = "Buscar pedido por id", description = "Retorna um pedido específico pelo identificador.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Pedido encontrado com sucesso",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = OrderResponseDto.class),
+                            examples = @ExampleObject(value = """
                             {
                               "id": 1,
                               "moment": "2019-06-20T19:53:07Z",
@@ -77,16 +88,16 @@ public class OrderResource {
                     content = @Content(schema = @Schema(implementation = StandardError.class)))
     })
     @GetMapping(value = "/{id}")
-    public ResponseEntity<Order> findById(@Parameter(description = "ID do pedido", example = "1")
-                                          @PathVariable Long id) {
+    public ResponseEntity<OrderResponseDto> findById(@Parameter(description = "ID do pedido", example = "1")
+                                                     @PathVariable Long id) {
         Order obj = service.findById(id);
-        return ResponseEntity.ok().body(obj);
+        return ResponseEntity.ok().body(mapper.toResponse(obj));
     }
 
     @Operation(summary = "Criar pedido", description = "Cria um pedido para um cliente com produtos já cadastrados.")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Pedido criado com sucesso",
-                    content = @Content(schema = @Schema(implementation = Order.class))),
+                    content = @Content(schema = @Schema(implementation = OrderResponseDto.class))),
             @ApiResponse(responseCode = "404", description = "Cliente ou produto não encontrado",
                     content = @Content(schema = @Schema(implementation = StandardError.class))),
             @ApiResponse(responseCode = "400", description = "Campos obrigatórios ausentes ou inválidos",
@@ -95,7 +106,7 @@ public class OrderResource {
                     content = @Content(schema = @Schema(implementation = StandardError.class)))
     })
     @PostMapping
-    public ResponseEntity<Order> insert(@io.swagger.v3.oas.annotations.parameters.RequestBody(
+    public ResponseEntity<OrderResponseDto> insert(@io.swagger.v3.oas.annotations.parameters.RequestBody(
             required = true, description = "Cliente e produtos identificados por ID, com suas quantidades",
             content = @Content(mediaType = "application/json",
                     schema = @Schema(implementation = OrderRequestDto.class),
@@ -113,20 +124,20 @@ public class OrderResource {
                 .path("/{id}")
                 .buildAndExpand(createdOrder.getId())
                 .toUri();
-        return ResponseEntity.created(uri).body(createdOrder);
+        return ResponseEntity.created(uri).body(mapper.toResponse(createdOrder));
     }
 
     @Operation(summary = "Atualizar pedido", description = "Atualiza os dados de um pedido existente, sobrescrevendo os valores com as informações fornecidas")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Pedido atualizado com sucesso",
-                    content = @Content(schema = @Schema(implementation = Order.class))),
+                    content = @Content(schema = @Schema(implementation = OrderResponseDto.class))),
             @ApiResponse(responseCode = "404", description = "Pedido não encontrado",
                     content = @Content(schema = @Schema(implementation = StandardError.class))),
             @ApiResponse(responseCode = "422", description = "Regra de negócio não atendida",
                     content = @Content(schema = @Schema(implementation = StandardError.class)))
     })
     @PutMapping(value = "/{id}")
-    public ResponseEntity<Order> update(@Parameter(description = "ID do pedido", example = "2")
+    public ResponseEntity<OrderResponseDto> update(@Parameter(description = "ID do pedido", example = "2")
                                             @PathVariable Long id,
                                         @io.swagger.v3.oas.annotations.parameters.RequestBody(
                                                 required = true, description = "Dados atualizados do pedido",
@@ -148,7 +159,7 @@ public class OrderResource {
                                                                 }
                                                        """))) @Valid @RequestBody OrderUpdateRequestDto request) {
         Order updatedOrder = service.update(id, request);
-        return ResponseEntity.ok().body(updatedOrder);
+        return ResponseEntity.ok().body(mapper.toResponse(updatedOrder));
     }
 
     @Operation(summary = "Excluir pedido", description = "Remove um pedido pelo identificador.")
