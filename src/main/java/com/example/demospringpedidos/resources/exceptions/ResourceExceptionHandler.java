@@ -50,4 +50,12 @@ public class ResourceExceptionHandler {
         return ResponseEntity.status(status).body(err);
     }
 
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<StandardError> stateError(IllegalStateException e, HttpServletRequest request) {
+        String error = "Object state error";
+        HttpStatus status = HttpStatus.UNPROCESSABLE_CONTENT;
+        StandardError err = new StandardError(Instant.now(), status.value(), error, e.getMessage(), request.getRequestURI());
+        return ResponseEntity.status(status).body(err);
+    }
+
 }
