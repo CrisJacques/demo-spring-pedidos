@@ -1,6 +1,10 @@
 package com.example.demospringpedidos.resources;
 
+import com.example.demospringpedidos.dto.OrderMapper;
+import com.example.demospringpedidos.dto.OrderResponseDto;
+import com.example.demospringpedidos.dto.UserResponseDto;
 import com.example.demospringpedidos.entities.Order;
+import com.example.demospringpedidos.entities.User;
 import com.example.demospringpedidos.entities.enums.OrderStatus;
 import com.example.demospringpedidos.dto.OrderRequestDto;
 import com.example.demospringpedidos.resources.exceptions.ResourceExceptionHandler;
@@ -36,6 +40,9 @@ import static org.hamcrest.Matchers.endsWith;
 class OrderResourceValidationTest {
     @Mock
     private OrderService service;
+
+    @Mock
+    private OrderMapper mapper;
 
     @InjectMocks
     private OrderResource resource;
@@ -84,9 +91,19 @@ class OrderResourceValidationTest {
 
     @Test
     void postCreatesOrderFromTheRequestDto() throws Exception {
-        Order createdOrder = new Order(null, Instant.now(), OrderStatus.WAITING_PAYMENT, null);
+        User user = new User(1L, "Anna", "anna@gmail.com", "999999999", "Abcdefg1");
+        Order createdOrder = new Order(null, Instant.now(), OrderStatus.WAITING_PAYMENT, user);
         createdOrder.setId(42L);
+        OrderResponseDto orderResponseDto = new OrderResponseDto(
+                createdOrder.getId(),
+                createdOrder.getMoment(),
+                createdOrder.getOrderStatus(),
+                new UserResponseDto(user.getId(), user.getName(), user.getEmail(), user.getPhone()),
+                createdOrder.getItems(),
+                createdOrder.getPayment(),
+                createdOrder.getTotal());
         when(service.insert(any())).thenReturn(createdOrder);
+        when(mapper.toResponse(createdOrder)).thenReturn(orderResponseDto);
 
         mockMvc.perform(post("/orders")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -99,7 +116,9 @@ class OrderResourceValidationTest {
                                 }
                                 """))
                 .andExpect(status().isCreated())
-                .andExpect(header().string("Location", endsWith("/orders/42")));
+                .andExpect(header().string("Location", endsWith("/orders/42")))
+                .andExpect(jsonPath("$.id").value(42))
+                .andExpect(jsonPath("$.client.name").value("Anna"));
 
         ArgumentCaptor<OrderRequestDto> requestCaptor = ArgumentCaptor.forClass(OrderRequestDto.class);
         verify(service).insert(requestCaptor.capture());
