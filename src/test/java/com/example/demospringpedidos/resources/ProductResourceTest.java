@@ -1,5 +1,6 @@
 package com.example.demospringpedidos.resources;
 
+import com.example.demospringpedidos.entities.Product;
 import com.example.demospringpedidos.services.ProductService;
 import com.example.demospringpedidos.services.exceptions.DatabaseException;
 import com.example.demospringpedidos.services.exceptions.ResourceNotFoundException;
@@ -10,10 +11,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ProductResourceTest {
@@ -22,6 +25,17 @@ class ProductResourceTest {
 
     @InjectMocks
     private ProductResource resource;
+
+    @InjectMocks
+    ProductResource productResource;
+
+    @Test void productResourceReturnsListAndItem() {
+        List<Product> list = List.of(new Product(1L, "Book", "Description", 10.0, ""));
+        when(service.findAll()).thenReturn(list);
+        when(service.findById(1L)).thenReturn(list.get(0));
+        assertSame(list, productResource.findAll().getBody());
+        assertSame(list.get(0), productResource.findById(1L).getBody());
+    }
 
     @Test
     void deleteReturnsNoContentAndDelegatesToService() {
