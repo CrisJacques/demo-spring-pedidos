@@ -16,6 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -76,17 +79,21 @@ class OrderResourceIntegrationTest {
                 .andExpect(jsonPath("$.items[0].price").value(90.5))
                 .andExpect(jsonPath("$.total").value(181.0))
                 .andExpect(jsonPath("$.moment").isNotEmpty())
+                .andExpect(content().string(not(containsString("\"password\""))))
                 .andReturn();
 
         String location = response.getResponse().getHeader("Location");
         mockMvc.perform(get(location))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.orderStatus").value("WAITING_PAYMENT"))
-                .andExpect(jsonPath("$.client.id").value(client.getId()));
+                .andExpect(jsonPath("$.client.id").value(client.getId()))
+                .andExpect(jsonPath("$.client.password").doesNotExist())
+                .andExpect(content().string(not(containsString("\"password\""))));
 
         mockMvc.perform(get("/orders"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[?(@.id == 4)]").exists());
+                .andExpect(jsonPath("$[?(@.id == 4)]").exists())
+                .andExpect(content().string(not(containsString("\"password\""))));
     }
 
     @Test
@@ -114,7 +121,9 @@ class OrderResourceIntegrationTest {
                         .content(request))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.orderStatus").value("PAID"))
-                .andExpect(jsonPath("$.payment.id").value(2));
+                .andExpect(jsonPath("$.payment.id").value(2))
+                .andExpect(jsonPath("$.client.password").doesNotExist())
+                .andExpect(content().string(not(containsString("\"password\""))));
 
         var paymentAfterFirstUpdate = orderRepository.findById(2L).orElseThrow().getPayment();
         var paymentMoment = paymentAfterFirstUpdate.getMoment();
@@ -124,7 +133,8 @@ class OrderResourceIntegrationTest {
                         .content(request))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.orderStatus").value("PAID"))
-                .andExpect(jsonPath("$.payment.id").value(paymentAfterFirstUpdate.getId()));
+                .andExpect(jsonPath("$.payment.id").value(paymentAfterFirstUpdate.getId()))
+                .andExpect(content().string(not(containsString("\"password\""))));
 
         var paymentAfterSecondUpdate = orderRepository.findById(2L).orElseThrow().getPayment();
         assertEquals(paymentMoment, paymentAfterSecondUpdate.getMoment());
@@ -150,7 +160,9 @@ class OrderResourceIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.items.length()").value(1))
                 .andExpect(jsonPath("$.items[0].product.id").value(replacement.getId()))
-                .andExpect(jsonPath("$.items[0].quantity").value(3));
+                .andExpect(jsonPath("$.items[0].quantity").value(3))
+                .andExpect(jsonPath("$.client.password").doesNotExist())
+                .andExpect(content().string(not(containsString("\"password\""))));
 
         entityManager.flush();
         entityManager.clear();
@@ -164,6 +176,8 @@ class OrderResourceIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.items.length()").value(1))
                 .andExpect(jsonPath("$.items[0].product.id").value(replacement.getId()))
-                .andExpect(jsonPath("$.items[0].quantity").value(3));
+                .andExpect(jsonPath("$.items[0].quantity").value(3))
+                .andExpect(jsonPath("$.client.password").doesNotExist())
+                .andExpect(content().string(not(containsString("\"password\""))));
     }
 }

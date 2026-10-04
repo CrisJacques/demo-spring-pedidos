@@ -1,6 +1,9 @@
 package com.example.demospringpedidos.resources;
 
 import com.example.demospringpedidos.entities.User;
+import com.example.demospringpedidos.dto.UserMapper;
+import com.example.demospringpedidos.dto.UserRequestDto;
+import com.example.demospringpedidos.dto.UserResponseDto;
 import com.example.demospringpedidos.resources.exceptions.ResourceExceptionHandler;
 import com.example.demospringpedidos.services.UserService;
 import com.example.demospringpedidos.services.exceptions.BusinessException;
@@ -26,6 +29,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class UserResourceValidationTest {
     @Mock
     private UserService service;
+
+    @Mock
+    private UserMapper mapper;
 
     @InjectMocks
     private UserResource resource;
@@ -167,20 +173,26 @@ class UserResourceValidationTest {
 
     @Test
     void postAcceptsAllRequiredFields() throws Exception {
-        when(service.insert(any(User.class))).thenReturn(
-                new User(42L, "User", "user@example.com", "999999999", "Abcdefg1"));
+        User entity = new User(42L, "User", "user@example.com", "999999999", "Abcdefg1");
+        when(mapper.toEntity(any(UserRequestDto.class))).thenReturn(entity);
+        when(service.insert(entity)).thenReturn(entity);
+        when(mapper.toResponse(entity)).thenReturn(
+                new UserResponseDto(42L, "User", "user@example.com", "999999999"));
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"name":"User","email":"user@example.com","phone":"999999999","password":"Abcdefg1"}
                                 """))
-                .andExpect(status().isCreated());
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.password").doesNotExist());
     }
 
     @Test
     void postRejectsExistingEmail() throws Exception {
-        when(service.insert(any(User.class))).thenThrow(new BusinessException("Email already exists."));
+        User entity = new User(null, "User", "user@example.com", "999999999", "Abcdefg1");
+        when(mapper.toEntity(any(UserRequestDto.class))).thenReturn(entity);
+        when(service.insert(entity)).thenThrow(new BusinessException("Email already exists."));
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
