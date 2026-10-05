@@ -16,13 +16,20 @@ import org.springframework.dao.DataIntegrityViolationException;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
-    @Mock UserRepository repository;
-    @InjectMocks UserService service;
+    @Mock private UserRepository repository;
+    @InjectMocks private UserService service;
 
     @Test void findAllReturnsRepositoryData() {
         List<User> users = List.of(new User(1L, "Maria", "maria@test.com", "999", "secret"));

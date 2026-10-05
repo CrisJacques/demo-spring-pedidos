@@ -9,9 +9,10 @@ import jakarta.persistence.ManyToOne;
 import java.io.Serializable;
 import java.util.Objects;
 
-// Classe para a chave primária composta da associação Product - Order. Esta classe não terá construtor declarado explicitamente
-// (ou seja, vai usar o construtor padrão, que é o sem argumentos)
-@Embeddable // Annotation usada para classes de chave primária composta. Essa anotação diz ao JPA: "Essa classe pode ser incorporada dentro de uma entidade."
+// Chave primária composta da associação entre Product e Order.
+// Sem construtor explícito, usa o construtor padrão sem argumentos.
+// Indica ao JPA que esta classe pode ser incorporada a uma entidade.
+@Embeddable
 public class OrderItemPk implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -39,12 +40,12 @@ public class OrderItemPk implements Serializable {
         this.product = product;
     }
 
-    // Neste caso, o hashCode() e equals() devem ser gerados levando em conta os 2 atributos, pois são eles em conjunto que definem de forma única
-    // a associação (diferente de outras classes já implementadas, em que usar apenas o id no hashCode e equals era suficiente para comparar de forma
-    // satisfatória um objeto com os demais)
+    // Os dois atributos identificam unicamente a associação e devem participar da igualdade.
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         OrderItemPk that = (OrderItemPk) o;
         return Objects.equals(order, that.order) && Objects.equals(product, that.product);
     }

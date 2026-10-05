@@ -1,6 +1,8 @@
 package com.example.demospringpedidos.resources;
 
-import com.example.demospringpedidos.dto.*;
+import com.example.demospringpedidos.dto.UserMapper;
+import com.example.demospringpedidos.dto.UserRequestDto;
+import com.example.demospringpedidos.dto.UserResponseDto;
 import com.example.demospringpedidos.entities.User;
 import com.example.demospringpedidos.services.UserService;
 import com.example.demospringpedidos.services.exceptions.ResourceNotFoundException;
@@ -17,14 +19,18 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class UserResourceTest {
-    @Mock UserService userService;
-    @Mock UserMapper userMapper;
-    @InjectMocks UserResource userResource;
+    @Mock private UserService userService;
+    @Mock private UserMapper userMapper;
+    @InjectMocks private UserResource userResource;
 
     @AfterEach void clearRequestContext() {
         RequestContextHolder.resetRequestAttributes();

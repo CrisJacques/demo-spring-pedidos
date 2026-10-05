@@ -1,21 +1,28 @@
 package com.example.demospringpedidos.resources;
 
 import com.example.demospringpedidos.entities.Category;
-import com.example.demospringpedidos.services.CategoryService;
 import com.example.demospringpedidos.resources.exceptions.StandardError;
+import com.example.demospringpedidos.services.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
@@ -47,7 +54,9 @@ public class CategoryResource {
         return ResponseEntity.ok().body(list);
     }
 
-    @Operation(summary = "Buscar categoria por id", description = "Retorna uma categoria específica pelo identificador.")
+    @Operation(
+            summary = "Buscar categoria por id",
+            description = "Retorna uma categoria específica pelo identificador.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Categoria encontrada com sucesso",
                     content = @Content(mediaType = "application/json",

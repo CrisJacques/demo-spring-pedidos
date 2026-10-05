@@ -16,11 +16,13 @@ import jakarta.persistence.Table;
 
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 @Entity
-@Table(name = "tb_order") // Essa anotação é usada quando se quer que o nome da tabela no banco de dados seja diferente do nome da classe da entidade
-// Neste caso, isso se tornou necessário porque Order é uma palavra reservada do SQL, então precisamos usar outro nome para a tabela para evitar conflito
+// Order é uma palavra reservada do SQL; por isso, a tabela usa outro nome.
+@Table(name = "tb_order")
 public class Order implements Serializable {
     private static final long serialVersionUID = 1L;
 
@@ -35,21 +37,24 @@ public class Order implements Serializable {
 
     @Schema(description = "Status atual do pedido", example = "PAID",
             allowableValues = {"WAITING_PAYMENT", "PAID", "SHIPPED", "DELIVERED", "CANCELED"})
-    private Integer orderStatus; // Mesmo o OrderStatus sendo um tipo enumerado (enum), internamente na classe trataremos ele como inteiro
-    // para ficar mais claro que ele será salvo no banco de dados como um inteiro
+    // Armazenado como inteiro para persistir o código do enum no banco de dados.
+    private Integer orderStatus;
 
-    @ManyToOne(optional = false) // Um cliente pode possuir muitos pedidos. Como esta classe é a do pedido, então aqui usamos ManyToOne
-    @JoinColumn(name = "client_id", nullable = false) // Aqui configuramos o nome da chave estrangeira que será criada no banco de dados. Ela não pode ser nula (null), porque um pedido sempre deve estar associado a um cliente
+    // Um cliente pode possuir vários pedidos.
+    @ManyToOne(optional = false)
+    // A chave estrangeira é obrigatória porque todo pedido pertence a um cliente.
+    @JoinColumn(name = "client_id", nullable = false)
     private User client;
 
-    @OneToMany(mappedBy = "id.order", cascade = CascadeType.ALL, orphanRemoval = true) // Tem que ser id.order porque o Order correspondente na classe OrderItem está dentro do atributo id
+    // A referência ao pedido em OrderItem está dentro do atributo id.
+    @OneToMany(mappedBy = "id.order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> items = new ArrayList<>();
-    //OrphanRemoval significa que se um item for removido da coleção items da entidade, o JPA irá removê-lo do banco (neste caso faz sentido porque um item de pedido só faz sentido existir se estiver associado a um pedido)
+    // orphanRemoval remove do banco os itens que deixam de pertencer ao pedido.
 
     @OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
     // order é o nome do atributo que referencia a classe Order lá na classe Payment
     // mappedBy → diz quem controla o relacionamento no banco
-    // cascade → diz quais operações devem ser propagadas entre as entidades - no caso acima, seriam todos os tipos de cascade:
+    // Cascade propaga as operações abaixo da entidade Order para Payment:
     //    CascadeType.PERSIST,
     //    CascadeType.MERGE,
     //    CascadeType.REMOVE,
@@ -86,12 +91,12 @@ public class Order implements Serializable {
     }
 
     public OrderStatus getOrderStatus() {
-        return OrderStatus.valueOf(orderStatus); // OrderStatus é guardado como inteiro dentro da classe, mas para o mundo exterior
-        // ele é retornado com o valor correspondente, não o código numérico
+        // Converte o código interno para o enum exposto aos chamadores.
+        return OrderStatus.valueOf(orderStatus);
     }
 
     public void setOrderStatus(OrderStatus orderStatus) {
-        if (orderStatus != null){
+        if (orderStatus != null) {
             this.orderStatus = orderStatus.getCode();
         }
     }
@@ -118,7 +123,9 @@ public class Order implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         Order order = (Order) o;
         return Objects.equals(id, order.id);
     }
@@ -129,9 +136,9 @@ public class Order implements Serializable {
     }
 
     // Colocando get no começo do nome do método para que o resultado apareça no json de resposta
-    public Double getTotal(){
+    public Double getTotal() {
         double sum = 0.0;
-        for(OrderItem orderItem : items){
+        for (OrderItem orderItem : items) {
             sum += orderItem.getSubTotal();
         }
         return sum;

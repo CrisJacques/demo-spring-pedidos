@@ -29,7 +29,7 @@ public class Payment implements Serializable {
     @OneToOne
     @MapsId // Anotação que devemos colocar na classe dependente no relacionamento OneToOne. A classe Payment é a classe
     // dependente neste caso porque ela não pode ser salva no banco sem estar associada a uma Order. Já a classe Order é
-    // a classe independente, pois ela pode ser salva no banco sem nenhum pagamento associado a ela (ver diagrama de classes)
+    // Order é independente e pode ser salvo sem um pagamento associado.
     @JsonIgnore
     private Order order;
 
@@ -69,7 +69,9 @@ public class Payment implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         Payment payment = (Payment) o;
         return Objects.equals(id, payment.id);
     }
