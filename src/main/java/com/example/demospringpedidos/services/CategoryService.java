@@ -14,9 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-// A anotação @Component permite que a classe seja registrada no Component Registration do Spring, habilitando-a para ser injetada como dependência usando o @Autowired
-// Existem outras anotações que são equivalentes, mas que tem semântica, como @Service para registrar Services e @Repository para registrar Repositories
-// No caso do CategoryRepository, é opcional colocar a anotação @Repository, pois ele herda da interface JpaRepository que já está registrada como componente do Spring
+// @Service registra esta classe como componente de serviço no Spring.
 public class CategoryService {
 
     @Autowired
@@ -26,7 +24,7 @@ public class CategoryService {
         return repository.findAll();
     }
 
-    public Category findById(Long id){
+    public Category findById(Long id) {
         Optional<Category> obj = repository.findById(id);
         return obj.orElseThrow(() -> new ResourceNotFoundException(id));
     }
@@ -56,7 +54,7 @@ public class CategoryService {
     }
 
     public void delete(Long id) {
-        findById(id);// Vai retornar ResourceNotFoundException se não encontrar categoria no banco com o id informado
+        findById(id); // Vai retornar ResourceNotFoundException se não encontrar categoria no banco com o id informado
         try {
             repository.deleteById(id);
         } catch (DataIntegrityViolationException e) {

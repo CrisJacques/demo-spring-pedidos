@@ -1,10 +1,10 @@
 package com.example.demospringpedidos.resources;
 
-import com.example.demospringpedidos.entities.Order;
 import com.example.demospringpedidos.dto.OrderItemRequestDto;
 import com.example.demospringpedidos.dto.OrderMapper;
 import com.example.demospringpedidos.dto.OrderRequestDto;
 import com.example.demospringpedidos.dto.OrderResponseDto;
+import com.example.demospringpedidos.entities.Order;
 import com.example.demospringpedidos.services.OrderService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -19,15 +19,17 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class OrderResourceTest {
 
-    @Mock OrderService orderService;
-    @Mock OrderMapper orderMapper;
-    @InjectMocks OrderResource orderResource;
+    @Mock private OrderService orderService;
+    @Mock private OrderMapper orderMapper;
+    @InjectMocks private OrderResource orderResource;
 
     @AfterEach void clearRequestContext() {
         RequestContextHolder.resetRequestAttributes();

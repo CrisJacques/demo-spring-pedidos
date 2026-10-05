@@ -1,9 +1,9 @@
 package com.example.demospringpedidos.resources;
 
-import com.example.demospringpedidos.entities.User;
 import com.example.demospringpedidos.dto.UserMapper;
 import com.example.demospringpedidos.dto.UserRequestDto;
 import com.example.demospringpedidos.dto.UserResponseDto;
+import com.example.demospringpedidos.entities.User;
 import com.example.demospringpedidos.resources.exceptions.ResourceExceptionHandler;
 import com.example.demospringpedidos.services.UserService;
 import com.example.demospringpedidos.services.exceptions.BusinessException;
@@ -136,7 +136,8 @@ class UserResourceValidationTest {
                                 """))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value(
-                        "password: The password must be at least 8 characters long, including a number, an uppercase letter, and a lowercase letter."));
+                        "password: The password must be at least 8 characters long, including a number, "
+                                + "an uppercase letter, and a lowercase letter."));
 
         verifyNoInteractions(service);
     }
@@ -166,7 +167,8 @@ class UserResourceValidationTest {
                                 """))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value(
-                        "password: The password must be at least 8 characters long, including a number, an uppercase letter, and a lowercase letter."));
+                        "password: The password must be at least 8 characters long, including a number, "
+                                + "an uppercase letter, and a lowercase letter."));
 
         verifyNoInteractions(service);
     }

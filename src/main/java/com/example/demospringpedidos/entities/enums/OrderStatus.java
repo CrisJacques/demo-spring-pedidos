@@ -11,9 +11,8 @@ public enum OrderStatus {
     DELIVERED,
     CANCELED
 
-    Porém, isso vai ser um problema para dar manutenção no futuro, pois dessa forma a atribuição de um código numérico será feita automaticamente
-    e no banco de dados é salvo o valor numérico da opção, e não o seu nome. Dessa forma, se futuramente alguém colocar um valor novo no meio do enum,
-    vai mudar o código numérico das opções posteriores ao valor adicionado, e os registros já existentes no banco de dados ficarão errados.
+    Isso dificulta a manutenção: o código numérico seria atribuído automaticamente e salvo no banco, em vez do nome.
+    Se um valor for inserido no meio do enum, os códigos posteriores mudam e os registros existentes ficam incorretos.
     Então a melhor opção é atribuir manualmente os códigos numéricos das opções, para evitar esse risco.
 
     Segue abaixo a forma mais correta de declarar um enum

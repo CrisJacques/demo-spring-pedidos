@@ -13,15 +13,19 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.NoSuchElementException;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CategoryServiceTest {
-    @Mock CategoryRepository repository;
-    @InjectMocks CategoryService service;
+    @Mock private CategoryRepository repository;
+    @InjectMocks private CategoryService service;
 
     @Test void findAllReturnsRepositoryData() {
         List<Category> categories = List.of(new Category(1L, "Books"));

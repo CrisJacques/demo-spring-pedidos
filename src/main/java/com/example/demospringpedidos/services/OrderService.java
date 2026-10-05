@@ -3,7 +3,11 @@ package com.example.demospringpedidos.services;
 import com.example.demospringpedidos.dto.OrderItemRequestDto;
 import com.example.demospringpedidos.dto.OrderRequestDto;
 import com.example.demospringpedidos.dto.OrderUpdateRequestDto;
-import com.example.demospringpedidos.entities.*;
+import com.example.demospringpedidos.entities.Order;
+import com.example.demospringpedidos.entities.OrderItem;
+import com.example.demospringpedidos.entities.Payment;
+import com.example.demospringpedidos.entities.Product;
+import com.example.demospringpedidos.entities.User;
 import com.example.demospringpedidos.entities.enums.OrderStatus;
 import com.example.demospringpedidos.repositories.OrderRepository;
 import com.example.demospringpedidos.services.exceptions.BusinessException;
@@ -22,9 +26,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @Service
-// A anotação @Component permite que a classe seja registrada no Component Registration do Spring, habilitando-a para ser injetada como dependência usando o @Autowired
-// Existem outras anotações que são equivalentes, mas que tem semântica, como @Service para registrar Services e @Repository para registrar Repositories
-// No caso do UserRepository, é opcional colocar a anotação @Repository, pois ele herda da interface JpaRepository que já está registrada como componente do Spring
+// @Service registra esta classe como componente de serviço no Spring.
 public class OrderService {
 
     @Autowired
@@ -43,7 +45,7 @@ public class OrderService {
         return repository.findAll();
     }
 
-    public Order findById(Long id){
+    public Order findById(Long id) {
         Optional<Order> obj = repository.findById(id);
         return obj.orElseThrow(() -> new ResourceNotFoundException(id));
     }
@@ -124,7 +126,7 @@ public class OrderService {
         return items;
     }
 
-    public void delete(Long id){
+    public void delete(Long id) {
         findById(id);
         repository.deleteById(id);
     }
@@ -139,7 +141,7 @@ public class OrderService {
         return repository.save(orderFromDatabase);
     }
 
-    private void updateOrderItems(Order orderFromDatabase, OrderUpdateRequestDto request){
+    private void updateOrderItems(Order orderFromDatabase, OrderUpdateRequestDto request) {
         Map<Long, Integer> quantitiesByProduct = aggregateQuantities(request.items());
         List<OrderItem> requestedItems = createOrderItems(quantitiesByProduct, orderFromDatabase);
         Map<Long, OrderItem> existingItemsByProduct = new LinkedHashMap<>();

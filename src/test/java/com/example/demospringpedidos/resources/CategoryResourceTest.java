@@ -1,6 +1,5 @@
 package com.example.demospringpedidos.resources;
 
-import com.example.demospringpedidos.dto.*;
 import com.example.demospringpedidos.entities.Category;
 import com.example.demospringpedidos.services.CategoryService;
 import com.example.demospringpedidos.services.exceptions.ResourceNotFoundException;
@@ -17,13 +16,16 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CategoryResourceTest {
-    @Mock CategoryService categoryService;
-    @InjectMocks CategoryResource categoryResource;
+    @Mock private CategoryService categoryService;
+    @InjectMocks private CategoryResource categoryResource;
 
     @AfterEach void clearRequestContext() {
         RequestContextHolder.resetRequestAttributes();

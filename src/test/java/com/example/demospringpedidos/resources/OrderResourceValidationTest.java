@@ -1,12 +1,12 @@
 package com.example.demospringpedidos.resources;
 
 import com.example.demospringpedidos.dto.OrderMapper;
+import com.example.demospringpedidos.dto.OrderRequestDto;
 import com.example.demospringpedidos.dto.OrderResponseDto;
 import com.example.demospringpedidos.dto.UserResponseDto;
 import com.example.demospringpedidos.entities.Order;
 import com.example.demospringpedidos.entities.User;
 import com.example.demospringpedidos.entities.enums.OrderStatus;
-import com.example.demospringpedidos.dto.OrderRequestDto;
 import com.example.demospringpedidos.resources.exceptions.ResourceExceptionHandler;
 import com.example.demospringpedidos.services.OrderService;
 import com.example.demospringpedidos.services.exceptions.ResourceNotFoundException;
@@ -23,18 +23,18 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.Instant;
 
+import static org.hamcrest.Matchers.endsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.hamcrest.Matchers.endsWith;
 
 @ExtendWith(MockitoExtension.class)
 class OrderResourceValidationTest {

@@ -49,22 +49,26 @@ class UserValidationTest {
         assertInvalidField(
                 new User(null, "Maria", "maria@example.com", "999123456", "Abcdef1"),
                 "password",
-                "The password must be at least 8 characters long, including a number, an uppercase letter, and a lowercase letter."
+                "The password must be at least 8 characters long, including a number, "
+                        + "an uppercase letter, and a lowercase letter."
         );
         assertInvalidField(
                 new User(null, "Maria", "maria@example.com", "999123456", "abcdefg1"),
                 "password",
-                "The password must be at least 8 characters long, including a number, an uppercase letter, and a lowercase letter."
+                "The password must be at least 8 characters long, including a number, "
+                        + "an uppercase letter, and a lowercase letter."
         );
         assertInvalidField(
                 new User(null, "Maria", "maria@example.com", "999123456", "ABCDEFG1"),
                 "password",
-                "The password must be at least 8 characters long, including a number, an uppercase letter, and a lowercase letter."
+                "The password must be at least 8 characters long, including a number, "
+                        + "an uppercase letter, and a lowercase letter."
         );
         assertInvalidField(
                 new User(null, "Maria", "maria@example.com", "999123456", "Abcdefgh"),
                 "password",
-                "The password must be at least 8 characters long, including a number, an uppercase letter, and a lowercase letter."
+                "The password must be at least 8 characters long, including a number, "
+                        + "an uppercase letter, and a lowercase letter."
         );
     }
 

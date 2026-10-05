@@ -1,12 +1,12 @@
 package com.example.demospringpedidos.services;
 
+import com.example.demospringpedidos.dto.OrderItemRequestDto;
+import com.example.demospringpedidos.dto.OrderRequestDto;
 import com.example.demospringpedidos.entities.Order;
 import com.example.demospringpedidos.entities.OrderItem;
 import com.example.demospringpedidos.entities.Product;
 import com.example.demospringpedidos.entities.User;
 import com.example.demospringpedidos.entities.enums.OrderStatus;
-import com.example.demospringpedidos.dto.OrderItemRequestDto;
-import com.example.demospringpedidos.dto.OrderRequestDto;
 import com.example.demospringpedidos.repositories.OrderRepository;
 import com.example.demospringpedidos.services.exceptions.BusinessException;
 import com.example.demospringpedidos.services.exceptions.ResourceNotFoundException;
@@ -22,19 +22,27 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
-import java.util.NoSuchElementException;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
-    @Mock OrderRepository repository;
-    @Mock UserService userService;
-    @Mock ProductService productService;
-    @Spy Clock clock = Clock.fixed(Instant.parse("2026-09-29T12:00:00Z"), ZoneOffset.UTC);
-    @InjectMocks OrderService service;
+    @Mock private OrderRepository repository;
+    @Mock private UserService userService;
+    @Mock private ProductService productService;
+    @Spy private Clock clock = Clock.fixed(Instant.parse("2026-09-29T12:00:00Z"), ZoneOffset.UTC);
+    @InjectMocks private OrderService service;
 
     @Test void findAllReturnsRepositoryData() {
         List<Order> orders = List.of(new Order());

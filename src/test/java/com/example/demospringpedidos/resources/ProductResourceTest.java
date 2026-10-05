@@ -13,9 +13,11 @@ import org.springframework.http.HttpStatus;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -27,7 +29,7 @@ class ProductResourceTest {
     private ProductResource resource;
 
     @InjectMocks
-    ProductResource productResource;
+    private ProductResource productResource;
 
     @Test void productResourceReturnsListAndItem() {
         List<Product> list = List.of(new Product(1L, "Book", "Description", 10.0, ""));

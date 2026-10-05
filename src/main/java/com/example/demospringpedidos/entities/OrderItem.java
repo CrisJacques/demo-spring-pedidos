@@ -15,12 +15,9 @@ import java.util.Objects;
 public class OrderItem implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    @EmbeddedId // Anotação usada para criar chaves primárias compostas (ou seja, neste caso não devemos usar o @Id). Isso significa que a
-    // chave primária desta entidade está dentro de um objeto e é composta por vários campos.
-    // Importante! A classe usada com @EmbeddedId deve ser anotada com @Embeddable (neste caso, a classe OrderItemPk)
-    private OrderItemPk id = new OrderItemPk(); // Como a chave primária é composta, foi preciso criar uma classe separada para ela para podermos usar aqui!
-    // Sempre tem que inicializar a chave primária composta para evitar NullPointerException na hora de fazer os sets dos seus atributos (olhar as duas
-    // primeiras linhas do construtor com argumentos, mais abaixo)
+    // A chave primária composta é mapeada por OrderItemPk, anotada com @Embeddable.
+    @EmbeddedId
+    private OrderItemPk id = new OrderItemPk();
 
     @Schema(description = "Quantidade do produto no pedido", example = "2", minimum = "1")
     private Integer quantity;
@@ -41,21 +38,22 @@ public class OrderItem implements Serializable {
 
     // Não teremos um getter e setter para o id, pelo fato de ele ser uma chave primária composta. Em vez disso,
     // teremos getters e setters para cada um dos seus atributos, no caso Order e Product
-    @JsonIgnore // Para evitar loop infinito de Order que chama OrderItem que chama Order e assim por diante quando o Jackson vai montar o json de resposta
-    // Como o Order está dentro do id e no Java Enterprise o que vale é o get, por isso que colocamos o @JsonIgnore aqui.
-    public Order getOrder(){
+    // Evita loop infinito na serialização: Order contém itens que referenciam o próprio Order.
+    // A anotação fica no getter porque o Jackson usa os métodos get.
+    @JsonIgnore
+    public Order getOrder() {
         return id.getOrder();
     }
 
-    public void setOrder(Order order){
+    public void setOrder(Order order) {
         id.setOrder(order);
     }
 
-    public Product getProduct(){
+    public Product getProduct() {
         return id.getProduct();
     }
 
-    public void setProduct(Product product){
+    public void setProduct(Product product) {
         id.setProduct(product);
     }
 
@@ -77,7 +75,9 @@ public class OrderItem implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         OrderItem orderItem = (OrderItem) o;
         return Objects.equals(id, orderItem.id);
     }
@@ -90,7 +90,7 @@ public class OrderItem implements Serializable {
     // Não dá para nomear essa função simplesmente como subTotal(), porque no Java Enterprise o que vale é o get, pois o
     // padrão do Java EE é os métodos que retornam uma informação terem seu nome iniciado com get, então
     // para o subtotal aparecer no json de resposta, precisamos que o método tenha get no começo do nome
-    public Double getSubTotal(){
+    public Double getSubTotal() {
         return price * quantity;
     }
 }

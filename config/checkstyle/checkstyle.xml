@@ -19,7 +19,7 @@
         <module name="AvoidStarImport"/>
         <module name="CustomImportOrder">
             <property name="customImportOrderRules"
-                      value="STANDARD_JAVA_PACKAGE###THIRD_PARTY_PACKAGE###STATIC"/>
+                      value="THIRD_PARTY_PACKAGE###STANDARD_JAVA_PACKAGE###STATIC"/>
             <property name="standardPackageRegExp" value="^(java|javax)\."/>
             <property name="thirdPartyPackageRegExp" value="^(com|io|jakarta|org|net)\."/>
             <property name="separateLineBetweenGroups" value="true"/>

@@ -51,18 +51,18 @@ public class Product implements Serializable {
     @Schema(description = "URL da imagem do produto", example = "https://example.com/images/lord-of-the-rings.jpg")
     private String imgUrl;
 
-    // Quando a relação entre as entidades é muitos para muitos, essa relação será representada em uma nova tabela no banco. A anotação @JoinTable deve ser
-    // usada em apenas uma das entidades relacionadas (aqui colocamos na classe Product, mas poderíamos ter colocado na classe Category).
+    // A relação muitos-para-muitos usa uma tabela de associação, declarada em uma das entidades.
     @ManyToMany
-    @JoinTable(name = "tb_product_category", // Qual deve ser o nome da tabela que vai armazenar as chaves estrangeiras das entidades relacionadas
-            joinColumns = @JoinColumn(name = "product_id"), // Qual deve ser o nome da coluna que vai referenciar a chave estrangeira referente a esta classe (Product)
-            inverseJoinColumns = @JoinColumn(name = "category_id")) // Qual deve ser o nome da coluna que vai referenciar a chave estrangeira referente a outra classe (Category)
-            // Obs.: se tivéssemos colocado a anotação @JoinTable na classe Category, o joinColumns seria "category_id" e o inverseJoinColumns seria "product_id"
-    private Set<Category> categories = new HashSet<>(); // Neste caso, é mais interessante usar Set ao invés de List porque queremos garantir que a lista de categorias não vai ter
-    // valores repetidos. Usamos o HashSet porque o ordenamento não importa. Além disso, é importante inicializar o Set para que ele não comece valendo null, ele deve começar valendo vazio
+    @JoinTable(
+            name = "tb_product_category",
+            joinColumns = @JoinColumn(name = "product_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id"))
+    // O Set evita categorias repetidas e o HashSet começa vazio, sem exigir ordenação.
+    private Set<Category> categories = new HashSet<>();
 
-    @OneToMany(mappedBy = "id.product") // Tem que ser id.product porque o Product correspondente na classe OrderItem está dentro do atributo id
-    private Set<OrderItem> items = new HashSet<>(); // Usando Set<> para avisar ao JPA não deve ser permitida a repetição de valores
+    // A referência ao produto em OrderItem está dentro do atributo id.
+    @OneToMany(mappedBy = "id.product")
+    private Set<OrderItem> items = new HashSet<>();
 
     public Product() {
 
@@ -120,8 +120,8 @@ public class Product implements Serializable {
         return categories;
     }
 
-    // Faz mais sentido retornar as Orders em que um Product está presente do que retornar as OrderItems em que ele está presente
-    @JsonIgnore // Para evitar loop infinito nas chamadas do Jackson para montar o json de resposta, pois um produto tem orders que tem produtos e assim por diante
+    // Retorna os pedidos associados sem expor a relação recursiva no JSON.
+    @JsonIgnore
     public Set<Order> getOrders() {
         Set<Order> set = new HashSet<>();
         for (OrderItem orderItem : items) {
@@ -132,7 +132,9 @@ public class Product implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         Product product = (Product) o;
         return Objects.equals(id, product.id);
     }

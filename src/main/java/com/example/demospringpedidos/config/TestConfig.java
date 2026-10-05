@@ -23,12 +23,13 @@ import java.util.Arrays;
 @Configuration
 @Profile("test") // o nome "test" foi o utilizado na config spring.profiles.active do application.properties
 public class TestConfig implements CommandLineRunner {
-    // Essa classe precisa implementar a interface CommandLineRunner para poder ser executada assim que a aplicação subir
+    // Essa classe implementa CommandLineRunner para ser executada assim que a aplicação subir.
     // Tudo o que estiver dentro do método run() será executado assim que a aplicação for iniciada
     // Neste caso, estaremos populando o banco de dados de teste com objetos instanciados dentro do run()
 
-    @Autowired // O próprio Spring faz a injeção de dependência automaticamente (ou seja, não precisamos declarar um construtor dentro de
-    // TestConfig que recebe um UserRepository como argumento e seta no atributo userRepository)
+    // O Spring faz a injeção de dependência automaticamente, sem precisar declarar um construtor que receba
+    // UserRepository e o atribua ao campo userRepository.
+    @Autowired
     private UserRepository userRepository;
 
     @Autowired
@@ -52,7 +53,7 @@ public class TestConfig implements CommandLineRunner {
         userRepository.saveAll(Arrays.asList(u1, u2));
 
         Order o1 = new Order(null, Instant.parse("2019-06-20T19:53:07Z"), OrderStatus.PAID, u1);
-        Order o2 = new Order(null, Instant.parse("2019-07-21T03:42:10Z"), OrderStatus.WAITING_PAYMENT,u2);
+        Order o2 = new Order(null, Instant.parse("2019-07-21T03:42:10Z"), OrderStatus.WAITING_PAYMENT, u2);
         Order o3 = new Order(null, Instant.parse("2019-07-22T15:21:22Z"), OrderStatus.WAITING_PAYMENT, u1);
         orderRepository.saveAll(Arrays.asList(o1, o2, o3));
 
@@ -83,10 +84,8 @@ public class TestConfig implements CommandLineRunner {
         orderItemRepository.saveAll(Arrays.asList(oi1, oi2, oi3, oi4));
 
         Payment pay1 = new Payment(null, Instant.parse("2019-06-20T19:53:07Z"), o1);
-        o1.setPayment(pay1); // Como o Payment é a entidade dependente na relação 1:1 com o Order, então não chamamos um
-        // repository de Payment para salvar no banco: a gente usa o setPayment do Order e depois salva o Order no banco.
-        // Como foi configurado CascadeType.ALL lá na classe Order, então o salvamento da Order no banco também vai
-        // salvar o Payment
+        // Payment depende de Order, então é associado ao pedido e salvo em cascata com CascadeType.ALL.
+        o1.setPayment(pay1);
         orderRepository.save(o1);
 
     }
