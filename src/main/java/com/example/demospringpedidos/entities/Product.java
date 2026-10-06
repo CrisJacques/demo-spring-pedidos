@@ -14,6 +14,8 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -30,25 +32,35 @@ public class Product implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Schema(description = "Identificador único do produto", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
+    @Getter
+    @Setter
     private Long id;
 
     @NotBlank(message = REQUIRED_FIELD)
     @Schema(description = "Nome do produto", example = "The Lord of the Rings",
             requiredMode = Schema.RequiredMode.REQUIRED)
+    @Getter
+    @Setter
     private String name;
 
     @NotBlank(message = REQUIRED_FIELD)
     @Schema(description = "Descrição detalhada do produto", example = "Lorem ipsum dolor sit amet, consectetur.",
             requiredMode = Schema.RequiredMode.REQUIRED)
+    @Getter
+    @Setter
     private String description;
 
     @NotNull(message = NOT_NULL)
     @Positive(message = "Price must be greater than zero")
     @Schema(description = "Preço unitário", example = "90.5", minimum = "0",
             requiredMode = Schema.RequiredMode.REQUIRED)
+    @Getter
+    @Setter
     private Double price;
 
     @Schema(description = "URL da imagem do produto", example = "https://example.com/images/lord-of-the-rings.jpg")
+    @Getter
+    @Setter
     private String imgUrl;
 
     // A relação muitos-para-muitos usa uma tabela de associação, declarada em uma das entidades.
@@ -58,6 +70,7 @@ public class Product implements Serializable {
             joinColumns = @JoinColumn(name = "product_id"),
             inverseJoinColumns = @JoinColumn(name = "category_id"))
     // O Set evita categorias repetidas e o HashSet começa vazio, sem exigir ordenação.
+    @Getter
     private Set<Category> categories = new HashSet<>();
 
     // A referência ao produto em OrderItem está dentro do atributo id.
@@ -74,50 +87,6 @@ public class Product implements Serializable {
         this.description = description;
         this.price = price;
         this.imgUrl = imgUrl;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public Double getPrice() {
-        return price;
-    }
-
-    public void setPrice(Double price) {
-        this.price = price;
-    }
-
-    public String getImgUrl() {
-        return imgUrl;
-    }
-
-    public void setImgUrl(String imgUrl) {
-        this.imgUrl = imgUrl;
-    }
-
-    public Set<Category> getCategories() {
-        return categories;
     }
 
     // Retorna os pedidos associados sem expor a relação recursiva no JSON.

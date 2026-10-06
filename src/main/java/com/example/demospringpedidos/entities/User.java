@@ -11,6 +11,8 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -27,6 +29,8 @@ public class User implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Schema(description = "Identificador único do usuário", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
+    @Getter
+    @Setter
     private Long id;
 
     @NotBlank(message = REQUIRED_FIELD)
@@ -34,6 +38,8 @@ public class User implements Serializable {
             description = "Nome completo do usuário",
             example = "Maria Brown",
             requiredMode = Schema.RequiredMode.REQUIRED)
+    @Getter
+    @Setter
     private String name;
 
     @NotBlank(message = REQUIRED_FIELD)
@@ -42,6 +48,8 @@ public class User implements Serializable {
             description = "E-mail do usuário (em formato válido)",
             example = "maria@gmail.com",
             requiredMode = Schema.RequiredMode.REQUIRED)
+    @Getter
+    @Setter
     private String email;
 
     @NotBlank(message = REQUIRED_FIELD)
@@ -50,6 +58,8 @@ public class User implements Serializable {
             description = "Telefone para contato (apenas números)",
             example = "988888888",
             requiredMode = Schema.RequiredMode.REQUIRED)
+    @Getter
+    @Setter
     private String phone;
 
     @NotBlank(message = REQUIRED_FIELD)
@@ -63,12 +73,15 @@ public class User implements Serializable {
                     + "incluindo um número, uma letra maiúscula e uma letra minúscula",
             example = "Abcdefg1",
             accessMode = Schema.AccessMode.WRITE_ONLY, requiredMode = Schema.RequiredMode.REQUIRED)
+    @Getter
+    @Setter
     private String password;
 
     // Evita loop infinito ao serializar a relação bidirecional entre usuários e pedidos.
     @JsonIgnore
     // Um usuário pode ter muitos pedidos; Order.client é o lado proprietário da relação.
     @OneToMany(mappedBy = "client")
+    @Getter
     private List<Order> orders = new ArrayList<>();
     // Por padrão, o JPA faz lazy loading para evitar estouro de memória.
     // Os objetos associados só são carregados quando o Jackson os solicita ao JPA.
@@ -84,50 +97,6 @@ public class User implements Serializable {
         this.email = email;
         this.phone = phone;
         this.password = password;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public List<Order> getOrders() {
-        return orders;
     }
 
     @Override

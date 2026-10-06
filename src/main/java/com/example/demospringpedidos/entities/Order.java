@@ -13,6 +13,8 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -29,10 +31,14 @@ public class Order implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Schema(description = "Identificador único do pedido", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
+    @Getter
+    @Setter
     private Long id;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss'Z'", timezone = "GMT")
     @Schema(description = "Instante de criação do pedido", example = "2019-06-20T19:53:07Z")
+    @Getter
+    @Setter
     private Instant moment;
 
     @Schema(description = "Status atual do pedido", example = "PAID",
@@ -44,10 +50,13 @@ public class Order implements Serializable {
     @ManyToOne(optional = false)
     // A chave estrangeira é obrigatória porque todo pedido pertence a um cliente.
     @JoinColumn(name = "client_id", nullable = false)
+    @Getter
+    @Setter
     private User client;
 
     // A referência ao pedido em OrderItem está dentro do atributo id.
     @OneToMany(mappedBy = "id.order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Getter
     private List<OrderItem> items = new ArrayList<>();
     // orphanRemoval remove do banco os itens que deixam de pertencer ao pedido.
 
@@ -61,6 +70,8 @@ public class Order implements Serializable {
     //    CascadeType.REFRESH,
     //    CascadeType.DETACH
     // CascadeType.ALL: "Quando eu fizer algo com o Order, faça a operação correspondente no Payment também."
+    @Getter
+    @Setter
     private Payment payment;
 
     public Order() {
@@ -74,22 +85,6 @@ public class Order implements Serializable {
         setOrderStatus(orderStatus);
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Instant getMoment() {
-        return moment;
-    }
-
-    public void setMoment(Instant moment) {
-        this.moment = moment;
-    }
-
     public OrderStatus getOrderStatus() {
         // Converte o código interno para o enum exposto aos chamadores.
         return OrderStatus.valueOf(orderStatus);
@@ -99,26 +94,6 @@ public class Order implements Serializable {
         if (orderStatus != null) {
             this.orderStatus = orderStatus.getCode();
         }
-    }
-
-    public User getClient() {
-        return client;
-    }
-
-    public void setClient(User client) {
-        this.client = client;
-    }
-
-    public List<OrderItem> getItems() {
-        return items;
-    }
-
-    public Payment getPayment() {
-        return payment;
-    }
-
-    public void setPayment(Payment payment) {
-        this.payment = payment;
     }
 
     @Override

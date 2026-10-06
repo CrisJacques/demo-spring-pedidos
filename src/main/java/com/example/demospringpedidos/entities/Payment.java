@@ -9,6 +9,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -22,8 +24,12 @@ public class Payment implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Schema(description = "Identificador do pagamento", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
+    @Getter
+    @Setter
     private Long id;
     @Schema(description = "Instante de confirmação do pagamento", example = "2019-06-20T21:53:07Z")
+    @Getter
+    @Setter
     private Instant moment;
 
     @OneToOne
@@ -31,6 +37,8 @@ public class Payment implements Serializable {
     // dependente neste caso porque ela não pode ser salva no banco sem estar associada a uma Order. Já a classe Order é
     // Order é independente e pode ser salvo sem um pagamento associado.
     @JsonIgnore
+    @Getter
+    @Setter
     private Order order;
 
     public Payment() {
@@ -40,30 +48,6 @@ public class Payment implements Serializable {
     public Payment(Long id, Instant moment, Order order) {
         this.id = id;
         this.moment = moment;
-        this.order = order;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Instant getMoment() {
-        return moment;
-    }
-
-    public void setMoment(Instant moment) {
-        this.moment = moment;
-    }
-
-    public Order getOrder() {
-        return order;
-    }
-
-    public void setOrder(Order order) {
         this.order = order;
     }
 

@@ -2,15 +2,13 @@ package com.example.demospringpedidos.dto;
 
 import com.example.demospringpedidos.entities.Order;
 import com.example.demospringpedidos.entities.User;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class OrderMapper {
     private final UserMapper userMapper;
-
-    public OrderMapper(UserMapper userMapper) {
-        this.userMapper = userMapper;
-    }
 
     public OrderResponseDto toResponse(Order order) {
         User client = order.getClient();
