@@ -9,6 +9,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -24,10 +26,14 @@ public class Category implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Schema(description = "Identificador único da categoria", example = "1", accessMode = Schema.AccessMode.READ_ONLY)
+    @Getter
+    @Setter
     private Long id;
 
     @NotBlank(message = REQUIRED_FIELD)
     @Schema(description = "Nome da categoria", example = "Electronics", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Getter
+    @Setter
     private String name;
 
     // Evita loop infinito ao serializar a relação bidirecional entre categorias e produtos.
@@ -35,6 +41,7 @@ public class Category implements Serializable {
     // O atributo categories em Product é o lado proprietário da relação.
     @ManyToMany(mappedBy = "categories")
     // Um Set impede produtos repetidos; o HashSet não depende de ordenação e começa vazio.
+    @Getter
     private Set<Product> products = new HashSet<>();
 
     public Category() {
@@ -44,26 +51,6 @@ public class Category implements Serializable {
     public Category(Long id, String name) {
         this.id = id;
         this.name = name;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public Set<Product> getProducts() {
-        return products;
     }
 
     @Override
