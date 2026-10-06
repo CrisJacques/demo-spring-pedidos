@@ -21,7 +21,7 @@
             <property name="customImportOrderRules"
                       value="THIRD_PARTY_PACKAGE###STANDARD_JAVA_PACKAGE###STATIC"/>
             <property name="standardPackageRegExp" value="^(java|javax)\."/>
-            <property name="thirdPartyPackageRegExp" value="^(com|io|jakarta|org|net)\."/>
+            <property name="thirdPartyPackageRegExp" value="^(com|io|jakarta|lombok|net|org)\."/>
             <property name="separateLineBetweenGroups" value="true"/>
             <property name="sortImportsInGroupAlphabetically" value="true"/>
         </module>
