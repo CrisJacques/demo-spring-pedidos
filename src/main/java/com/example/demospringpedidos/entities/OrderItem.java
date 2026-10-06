@@ -6,6 +6,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -20,8 +22,12 @@ public class OrderItem implements Serializable {
     private OrderItemPk id = new OrderItemPk();
 
     @Schema(description = "Quantidade do produto no pedido", example = "2", minimum = "1")
+    @Getter
+    @Setter
     private Integer quantity;
     @Schema(description = "Preço unitário registrado no momento da compra", example = "90.5", minimum = "0")
+    @Getter
+    @Setter
     private Double price;
 
     public OrderItem() {
@@ -55,22 +61,6 @@ public class OrderItem implements Serializable {
 
     public void setProduct(Product product) {
         id.setProduct(product);
-    }
-
-    public Integer getQuantity() {
-        return quantity;
-    }
-
-    public void setQuantity(Integer quantity) {
-        this.quantity = quantity;
-    }
-
-    public Double getPrice() {
-        return price;
-    }
-
-    public void setPrice(Double price) {
-        this.price = price;
     }
 
     @Override
