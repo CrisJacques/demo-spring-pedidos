@@ -80,6 +80,27 @@ class OrderDomainTest {
         assertEquals(first.hashCode(), second.hashCode());
     }
 
+    @Test void compositeKeyEqualityHandlesNullAndDifferentAssociations() {
+        OrderItemPk emptyKey = new OrderItemPk();
+        OrderItemPk anotherEmptyKey = new OrderItemPk();
+        assertEquals(emptyKey, anotherEmptyKey);
+        assertNotEquals(emptyKey, null);
+        assertNotEquals(emptyKey, new Object());
+
+        OrderItemPk differentProduct = new OrderItemPk();
+        differentProduct.setOrder(new Order(1L, Instant.now(), OrderStatus.PAID, null));
+        differentProduct.setProduct(new Product(2L, "B", "b", 1.0, ""));
+        OrderItemPk original = new OrderItemPk();
+        original.setOrder(new Order(1L, Instant.now(), OrderStatus.PAID, null));
+        original.setProduct(new Product(1L, "A", "a", 1.0, ""));
+        assertNotEquals(original, differentProduct);
+
+        OrderItemPk differentOrder = new OrderItemPk();
+        differentOrder.setOrder(new Order(2L, Instant.now(), OrderStatus.PAID, null));
+        differentOrder.setProduct(new Product(1L, "A", "a", 1.0, ""));
+        assertNotEquals(original, differentOrder);
+    }
+
     @Test void paymentAssociatesOrderAndMoment() {
         Order order = new Order();
         Instant moment = Instant.parse("2019-06-20T19:53:07Z");
@@ -89,5 +110,17 @@ class OrderDomainTest {
         assertSame(order, payment.getOrder());
         payment.setOrder(null);
         assertNull(payment.getOrder());
+    }
+
+    @Test void paymentsUseIdForEqualityAndHashCode() {
+        Payment first = new Payment(1L, Instant.parse("2019-06-20T19:53:07Z"), null);
+        Payment sameId = new Payment(1L, Instant.parse("2020-06-20T19:53:07Z"), null);
+        Payment differentId = new Payment(2L, Instant.parse("2019-06-20T19:53:07Z"), null);
+
+        assertEquals(first, sameId);
+        assertEquals(first.hashCode(), sameId.hashCode());
+        assertNotEquals(first, differentId);
+        assertNotEquals(first, null);
+        assertNotEquals(first, new Object());
     }
 }

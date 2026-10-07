@@ -2,8 +2,10 @@ package com.example.demospringpedidos.services;
 
 import com.example.demospringpedidos.dto.OrderItemRequestDto;
 import com.example.demospringpedidos.dto.OrderRequestDto;
+import com.example.demospringpedidos.dto.OrderUpdateRequestDto;
 import com.example.demospringpedidos.entities.Order;
 import com.example.demospringpedidos.entities.OrderItem;
+import com.example.demospringpedidos.entities.Payment;
 import com.example.demospringpedidos.entities.Product;
 import com.example.demospringpedidos.entities.User;
 import com.example.demospringpedidos.entities.enums.OrderStatus;
@@ -25,8 +27,10 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyLong;
 import static org.mockito.Mockito.doReturn;
@@ -154,9 +158,13 @@ class OrderServiceTest {
         assertEquals("Order body is required.", missingRequest.getMessage());
 
         OrderRequestDto request = new OrderRequestDto(1L, List.of(new OrderItemRequestDto(1L, 0)));
+        OrderRequestDto missingQuantity = new OrderRequestDto(1L,
+                List.of(new OrderItemRequestDto(1L, null)));
 
         BusinessException invalidQuantity = assertThrows(BusinessException.class, () -> service.insert(request));
         assertEquals("Item quantity must be greater than zero.", invalidQuantity.getMessage());
+        assertEquals("Item quantity must be greater than zero.",
+                assertThrows(BusinessException.class, () -> service.insert(missingQuantity)).getMessage());
         verify(repository, never()).save(any(Order.class));
     }
 
@@ -166,6 +174,20 @@ class OrderServiceTest {
         assertThrows(BusinessException.class, () -> service.insert(request));
 
         verify(repository, never()).save(any(Order.class));
+    }
+
+    @Test void insertRejectsEmptyItemsAndNullItem() {
+        OrderRequestDto nullItems = new OrderRequestDto(1L, null);
+        OrderRequestDto emptyItems = new OrderRequestDto(1L, List.of());
+        OrderRequestDto nullItem = new OrderRequestDto(1L, java.util.Collections.singletonList(null));
+
+        assertEquals("At least one item is required.",
+                assertThrows(BusinessException.class, () -> service.insert(nullItems)).getMessage());
+        assertEquals("At least one item is required.",
+                assertThrows(BusinessException.class, () -> service.insert(emptyItems)).getMessage());
+        assertEquals("Order items cannot be null.",
+                assertThrows(BusinessException.class, () -> service.insert(nullItem)).getMessage());
+        verifyNoInteractions(userService, productService, repository);
     }
 
     @Test void insertPropagatesMissingClientOrProduct() {
@@ -179,6 +201,78 @@ class OrderServiceTest {
                 .when(userService).findById(99L);
         when(productService.findAllById(Set.of(1L))).thenThrow(new ResourceNotFoundException(1L));
         assertThrows(ResourceNotFoundException.class, () -> service.insert(request));
+        verify(repository, never()).save(any(Order.class));
+    }
+
+    @Test void updateReconcilesItemsAndCreatesPaymentWhenOrderBecomesPaid() {
+        User client = new User(1L, "Maria Brown", "maria@gmail.com", "988888888", "Abcdefg1");
+        Product existingProduct = new Product(1L, "Book", "Description", 12.0, "");
+        Product addedProduct = new Product(2L, "Pen", "Description", 2.0, "");
+        Product removedProduct = new Product(3L, "Old", "Description", 5.0, "");
+        Order order = new Order(10L, Instant.parse("2026-09-28T12:00:00Z"), OrderStatus.WAITING_PAYMENT, client);
+        OrderItem existingItem = new OrderItem(order, existingProduct, 1, 10.0);
+        order.getItems().add(existingItem);
+        order.getItems().add(new OrderItem(order, removedProduct, 3, 5.0));
+        OrderUpdateRequestDto request = new OrderUpdateRequestDto(2, List.of(
+                new OrderItemRequestDto(1L, 4),
+                new OrderItemRequestDto(2L, 2)));
+        when(repository.findById(10L)).thenReturn(Optional.of(order));
+        when(productService.findAllById(Set.of(1L, 2L))).thenReturn(List.of(
+                new Product(1L, "Book", "Description", 15.0, ""),
+                addedProduct));
+        when(repository.save(order)).thenReturn(order);
+
+        Order result = service.update(10L, request);
+
+        assertSame(order, result);
+        assertEquals(OrderStatus.PAID, order.getOrderStatus());
+        assertEquals(2, order.getItems().size());
+        assertTrue(order.getItems().contains(existingItem));
+        assertEquals(4, existingItem.getQuantity());
+        assertEquals(15.0, existingItem.getPrice());
+        OrderItem addedItem = order.getItems().stream()
+                .filter(item -> item.getProduct().getId().equals(2L))
+                .findFirst()
+                .orElseThrow();
+        assertSame(addedProduct, addedItem.getProduct());
+        assertEquals(2, addedItem.getQuantity());
+        assertTrue(order.getItems().stream().noneMatch(item -> item.getProduct().getId().equals(3L)));
+        assertEquals(Instant.parse("2026-09-29T12:00:00Z"), order.getPayment().getMoment());
+        assertSame(order, order.getPayment().getOrder());
+        verify(repository).save(order);
+    }
+
+    @Test void updatePreservesExistingPaymentAndDoesNotCreatePaymentForOtherStatuses() {
+        Order paidOrder = new Order(11L, Instant.now(), OrderStatus.PAID, new User());
+        Payment existingPayment = new Payment(11L, Instant.parse("2026-09-28T12:00:00Z"), paidOrder);
+        paidOrder.setPayment(existingPayment);
+        OrderUpdateRequestDto paidRequest = new OrderUpdateRequestDto(2, List.of(new OrderItemRequestDto(1L, 1)));
+        when(repository.findById(11L)).thenReturn(Optional.of(paidOrder));
+        when(productService.findAllById(Set.of(1L))).thenReturn(List.of(new Product(1L, "Book", "D", 3.0, "")));
+        when(repository.save(paidOrder)).thenReturn(paidOrder);
+
+        assertSame(paidOrder, service.update(11L, paidRequest));
+        assertSame(existingPayment, paidOrder.getPayment());
+
+        Order shippedOrder = new Order(12L, Instant.now(), OrderStatus.WAITING_PAYMENT, new User());
+        OrderUpdateRequestDto shippedRequest = new OrderUpdateRequestDto(3, List.of(new OrderItemRequestDto(1L, 1)));
+        when(repository.findById(12L)).thenReturn(Optional.of(shippedOrder));
+        when(repository.save(shippedOrder)).thenReturn(shippedOrder);
+
+        assertSame(shippedOrder, service.update(12L, shippedRequest));
+        assertEquals(OrderStatus.SHIPPED, shippedOrder.getOrderStatus());
+        assertNull(shippedOrder.getPayment());
+    }
+
+    @Test void updateRejectsInvalidStatusWithoutSavingOrder() {
+        Order order = new Order(13L, Instant.now(), OrderStatus.WAITING_PAYMENT, new User());
+        when(repository.findById(13L)).thenReturn(Optional.of(order));
+        when(productService.findAllById(Set.of(1L)))
+                .thenReturn(List.of(new Product(1L, "Book", "Description", 3.0, "")));
+        OrderUpdateRequestDto request = new OrderUpdateRequestDto(99, List.of(new OrderItemRequestDto(1L, 1)));
+
+        assertThrows(IllegalArgumentException.class, () -> service.update(13L, request));
+
         verify(repository, never()).save(any(Order.class));
     }
 }

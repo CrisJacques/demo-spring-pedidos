@@ -3,6 +3,7 @@ package com.example.demospringpedidos.services;
 import com.example.demospringpedidos.entities.Category;
 import com.example.demospringpedidos.repositories.CategoryRepository;
 import com.example.demospringpedidos.services.exceptions.BusinessException;
+import com.example.demospringpedidos.services.exceptions.DatabaseException;
 import com.example.demospringpedidos.services.exceptions.ResourceNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,6 +20,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyLong;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -107,5 +111,32 @@ class CategoryServiceTest {
 
         assertEquals("New name for category already exists", exception.getMessage());
         verify(repository, never()).save(any(Category.class));
+    }
+
+    @Test void deleteRemovesExistingCategory() {
+        when(repository.findById(1L)).thenReturn(Optional.of(new Category(1L, "Books")));
+
+        service.delete(1L);
+
+        verify(repository).findById(1L);
+        verify(repository).deleteById(1L);
+    }
+
+    @Test void deleteDoesNotDeleteMissingCategory() {
+        when(repository.findById(9L)).thenReturn(Optional.empty());
+
+        assertThrows(ResourceNotFoundException.class, () -> service.delete(9L));
+
+        verify(repository, never()).deleteById(anyLong());
+    }
+
+    @Test void deleteConvertsIntegrityViolationToDatabaseException() {
+        when(repository.findById(1L)).thenReturn(Optional.of(new Category(1L, "Books")));
+        doThrow(new DataIntegrityViolationException("constraint")).when(repository).deleteById(1L);
+
+        DatabaseException exception = assertThrows(DatabaseException.class, () -> service.delete(1L));
+
+        assertEquals("Category has associated products", exception.getMessage());
+        verify(repository).deleteById(1L);
     }
 }
