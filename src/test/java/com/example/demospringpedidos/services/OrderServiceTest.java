@@ -271,7 +271,7 @@ class OrderServiceTest {
                 .thenReturn(List.of(new Product(1L, "Book", "Description", 3.0, "")));
         OrderUpdateRequestDto request = new OrderUpdateRequestDto(99, List.of(new OrderItemRequestDto(1L, 1)));
 
-        assertThrows(IllegalArgumentException.class, () -> service.update(13L, request));
+        assertThrows(BusinessException.class, () -> service.update(13L, request));
 
         verify(repository, never()).save(any(Order.class));
     }

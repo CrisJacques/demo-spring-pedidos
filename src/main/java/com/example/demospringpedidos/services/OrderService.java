@@ -136,7 +136,11 @@ public class OrderService {
         Order orderFromDatabase = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException(id));
 
         updateOrderItems(orderFromDatabase, request);
-        updateStatus(orderFromDatabase, request.orderStatus());
+        try {
+            updateStatus(orderFromDatabase, request.orderStatus());
+        } catch (IllegalArgumentException e) {
+            throw new BusinessException(e.getMessage());
+        }
 
         return repository.save(orderFromDatabase);
     }
