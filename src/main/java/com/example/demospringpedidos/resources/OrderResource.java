@@ -60,9 +60,39 @@ public class OrderResource {
                                   "email": "maria@gmail.com",
                                   "phone": "988888888"
                                 },
-                                "items": [],
-                                "payment": null,
-                                "total": 181.0
+                                "items": [
+                                  {
+                                    "product": {
+                                      "id": 1,
+                                      "name": "The Lord of the Rings",
+                                      "description": "Lorem ipsum dolor sit amet, consectetur.",
+                                      "price": 90.5,
+                                      "imgUrl": "",
+                                      "categories": [{"id": 2, "name": "Books"}]
+                                    },
+                                    "quantity": 2,
+                                    "price": 90.5,
+                                    "subTotal": 181.0
+                                  },
+                                  {
+                                    "product": {
+                                      "id": 3,
+                                      "name": "Macbook Pro",
+                                      "description": "Nam eleifend maximus tortor, at mollis.",
+                                      "price": 1250.0,
+                                      "imgUrl": "",
+                                      "categories": [{"id": 3, "name": "Computers"}]
+                                    },
+                                    "quantity": 1,
+                                    "price": 1250.0,
+                                    "subTotal": 1250.0
+                                  }
+                                ],
+                                "payment": {
+                                  "id": 1,
+                                  "moment": "2019-06-20T19:53:07Z"
+                                },
+                                "total": 1431.0
                               }
                             ]
                             """)))
@@ -91,9 +121,39 @@ public class OrderResource {
                                 "email": "maria@gmail.com",
                                 "phone": "988888888"
                               },
-                              "items": [],
-                              "payment": null,
-                              "total": 181.0
+                              "items": [
+                                {
+                                  "product": {
+                                    "id": 1,
+                                    "name": "The Lord of the Rings",
+                                    "description": "Lorem ipsum dolor sit amet, consectetur.",
+                                    "price": 90.5,
+                                    "imgUrl": "",
+                                    "categories": [{"id": 2, "name": "Books"}]
+                                  },
+                                  "quantity": 2,
+                                  "price": 90.5,
+                                  "subTotal": 181.0
+                                },
+                                {
+                                  "product": {
+                                    "id": 3,
+                                    "name": "Macbook Pro",
+                                    "description": "Nam eleifend maximus tortor, at mollis.",
+                                    "price": 1250.0,
+                                    "imgUrl": "",
+                                    "categories": [{"id": 3, "name": "Computers"}]
+                                  },
+                                  "quantity": 1,
+                                  "price": 1250.0,
+                                  "subTotal": 1250.0
+                                }
+                              ],
+                              "payment": {
+                                "id": 1,
+                                "moment": "2019-06-20T19:53:07Z"
+                              },
+                              "total": 1431.0
                             }
                             """))),
             @ApiResponse(responseCode = "404", description = "Pedido não encontrado",
@@ -146,10 +206,23 @@ public class OrderResource {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Pedido atualizado com sucesso",
                     content = @Content(schema = @Schema(implementation = OrderResponseDto.class))),
-            @ApiResponse(responseCode = "404", description = "Pedido não encontrado",
+            @ApiResponse(responseCode = "404", description = "Pedido ou produto não encontrado",
                     content = @Content(schema = @Schema(implementation = StandardError.class))),
-            @ApiResponse(responseCode = "422", description = "Regra de negócio não atendida",
-                    content = @Content(schema = @Schema(implementation = StandardError.class)))
+            @ApiResponse(responseCode = "400", description = "Campos obrigatórios ausentes ou inválidos",
+                    content = @Content(schema = @Schema(implementation = StandardError.class))),
+            @ApiResponse(responseCode = "422",
+                    description = "Status ausente ou fora dos valores aceitos (1 a 5), "
+                            + "ou regra de negócio não atendida",
+                    content = @Content(schema = @Schema(implementation = StandardError.class),
+                            examples = @ExampleObject(value = """
+                                    {
+                                      "timestamp": "2026-10-10T23:51:14Z",
+                                      "status": 422,
+                                      "error": "Business error",
+                                      "message": "Invalid OrderStatus code",
+                                      "path": "/orders/2"
+                                    }
+                                    """)))
     })
     @PutMapping(value = "/{id}")
     public ResponseEntity<OrderResponseDto> update(@Parameter(description = "ID do pedido", example = "2")

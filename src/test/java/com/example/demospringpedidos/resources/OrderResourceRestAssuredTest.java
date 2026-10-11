@@ -265,6 +265,24 @@ class OrderResourceRestAssuredTest {
     }
 
     @Test
+    void putOrderReturnsUnprocessableEntityWhenStatusIsInvalid() {
+        given()
+                .contentType(ContentType.JSON)
+                .pathParam("id", 2)
+                .body("""
+                        {"orderStatus": 99, "items": [{"productId": 1, "quantity": 1}]}
+                        """)
+                .when()
+                .put("/{id}")
+                .then()
+                .statusCode(422)
+                .body("status", equalTo(422))
+                .body("error", equalTo("Business error"))
+                .body("message", equalTo("Invalid OrderStatus code"))
+                .body("path", equalTo("/orders/2"));
+    }
+
+    @Test
     void putOrderRejectsEmptyListItems() {
         given()
                 .contentType(ContentType.JSON)

@@ -79,6 +79,8 @@ public class CategoryResource {
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Categoria criada com sucesso",
                     content = @Content(schema = @Schema(implementation = Category.class))),
+            @ApiResponse(responseCode = "400", description = "Nome ausente ou inválido",
+                    content = @Content(schema = @Schema(implementation = StandardError.class))),
             @ApiResponse(responseCode = "422", description = "Erro de negócio",
                     content = @Content(schema = @Schema(implementation = StandardError.class)))
     })
@@ -103,6 +105,9 @@ public class CategoryResource {
             @ApiResponse(responseCode = "200", description = "Categoria atualizada com sucesso",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = Category.class))),
+            @ApiResponse(responseCode = "400", description = "Nome ausente ou inválido",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = StandardError.class))),
             @ApiResponse(responseCode = "404", description = "Recurso não encontrado",
                     content = @Content(mediaType = "application/json",
                             schema = @Schema(implementation = StandardError.class))),

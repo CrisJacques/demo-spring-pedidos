@@ -67,7 +67,10 @@ public class ProductResource {
                               "price": 90.5,
                               "imgUrl": "https://example.com/images/lord-of-the-rings.jpg"
                             }
-                            """)))
+                            """))),
+            @ApiResponse(responseCode = "404", description = "Produto não encontrado",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = StandardError.class)))
     })
     @GetMapping(value = "/{id}")
     public ResponseEntity<Product> findById(@Parameter(description = "ID do produto", example = "1")
@@ -119,7 +122,9 @@ public class ProductResource {
                     responseCode = "400",
                     description = "Campos obrigatórios estão faltando ou possuem valores inválidos",
                     content = @Content(schema = @Schema(implementation = StandardError.class))),
-            @ApiResponse(responseCode = "404", description = "Recurso não encontrado",
+            @ApiResponse(responseCode = "404", description = "Produto não encontrado",
+                    content = @Content(schema = @Schema(implementation = StandardError.class))),
+            @ApiResponse(responseCode = "422", description = "Nome do produto já existe",
                     content = @Content(schema = @Schema(implementation = StandardError.class)))
     })
     @PutMapping(value = "/{id}")
