@@ -5,6 +5,7 @@ import com.example.demospringpedidos.dto.UserRequestDto;
 import com.example.demospringpedidos.dto.UserResponseDto;
 import com.example.demospringpedidos.entities.User;
 import com.example.demospringpedidos.resources.exceptions.StandardError;
+import com.example.demospringpedidos.resources.swaggerexamples.UserResourceSwaggerExamples;
 import com.example.demospringpedidos.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -47,16 +48,7 @@ public class UserResource {
             @ApiResponse(responseCode = "200", description = "Usuários encontrados com sucesso",
                     content = @Content(mediaType = "application/json",
                             array = @ArraySchema(schema = @Schema(implementation = UserResponseDto.class)),
-                            examples = @ExampleObject(value = """
-                            [
-                              {
-                                "id": 1,
-                                "name": "Maria Brown",
-                                "email": "maria@gmail.com",
-                                "phone": "988888888"
-                              }
-                            ]
-                            """)))
+                            examples = @ExampleObject(value = UserResourceSwaggerExamples.GET_USERS_RESPONSE_SUCCESS)))
     })
     @GetMapping
     public ResponseEntity<List<UserResponseDto>> findAll() {
@@ -66,20 +58,24 @@ public class UserResource {
         return ResponseEntity.ok().body(list);
     }
 
-    @Operation(summary = "Buscar usuário por id", description = "Retorna um usuário específico pelo identificador.")
+    @Operation(
+            summary = "Buscar usuário por id",
+            description = "Retorna um usuário específico pelo identificador."
+    )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Usuário encontrado com sucesso",
-                    content = @Content(mediaType = "application/json",
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Usuário encontrado com sucesso",
+                    content = @Content(
+                            mediaType = "application/json",
                             schema = @Schema(implementation = UserResponseDto.class),
-                            examples = @ExampleObject(value = """
-                            {
-                              "id": 1,
-                              "name": "Maria Brown",
-                              "email": "maria@gmail.com",
-                              "phone": "988888888"
-                            }
-                            """))),
-            @ApiResponse(responseCode = "404", description = "Recurso não encontrado",
+                            examples = @ExampleObject(
+                                    value = UserResourceSwaggerExamples.GET_USER_BY_ID_RESPONSE_SUCCESS
+                            )))
+            ,
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Recurso não encontrado",
                     content = @Content(schema = @Schema(implementation = StandardError.class)))
     })
     @GetMapping(value = "/{id}")
@@ -101,21 +97,23 @@ public class UserResource {
                     content = @Content(schema = @Schema(implementation = StandardError.class)))
     })
     @PostMapping
-    public ResponseEntity<UserResponseDto> insert(@io.swagger.v3.oas.annotations.parameters.RequestBody(
-            required = true, description = "Dados do novo usuário",
-            content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = UserRequestDto.class),
-                    examples = @ExampleObject(value = """
-                    {
-                      "name": "João da Silva",
-                      "email": "joao@example.com",
-                      "phone": "999999999",
-                      "password": "Abcdefg1"
-                    }
-                    """))) @Valid @RequestBody UserRequestDto request) {
+    public ResponseEntity<UserResponseDto> insert(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    required = true,
+                    description = "Dados do novo usuário",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UserRequestDto.class),
+                            examples = @ExampleObject(
+                                    value = UserResourceSwaggerExamples.POST_USERS_REQUEST
+                            )))
+            @Valid
+            @RequestBody UserRequestDto request) {
         User obj = service.insert(mapper.toEntity(request));
-        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(obj.getId()).toUri();
-        // Retorna 201, o cabeçalho Location e o objeto criado no corpo da resposta.
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(obj.getId())
+                .toUri();
         return ResponseEntity.created(uri).body(mapper.toResponse(obj));
     }
 
@@ -146,20 +144,20 @@ public class UserResource {
                     content = @Content(schema = @Schema(implementation = StandardError.class)))
     })
     @PutMapping(value = "/{id}")
-    public ResponseEntity<UserResponseDto> update(@Parameter(description = "ID do usuário", example = "1")
-                                                  @PathVariable Long id,
-                                                  @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                                               required = true, description = "Dados atualizados do usuário",
-                                               content = @Content(mediaType = "application/json",
-                                                       schema = @Schema(implementation = UserRequestDto.class),
-                                                       examples = @ExampleObject(value = """
-                                                       {
-                                                         "name": "Maria Brown",
-                                                         "email": "maria.brown@example.com",
-                                                         "phone": "988888888",
-                                                         "password": "Abcdefg1"
-                                                       }
-                                                       """))) @Valid @RequestBody UserRequestDto request) {
+    public ResponseEntity<UserResponseDto> update(
+            @Parameter(description = "ID do usuário", example = "1")
+            @PathVariable Long id,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    required = true,
+                    description = "Dados atualizados do usuário",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = UserRequestDto.class),
+                            examples = @ExampleObject(
+                                    value = UserResourceSwaggerExamples.PUT_USER_REQUEST
+                            )))
+            @Valid
+            @RequestBody UserRequestDto request) {
         User obj = service.update(id, mapper.toEntity(request));
         return ResponseEntity.ok().body(mapper.toResponse(obj));
     }

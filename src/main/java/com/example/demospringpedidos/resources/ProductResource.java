@@ -2,6 +2,7 @@ package com.example.demospringpedidos.resources;
 
 import com.example.demospringpedidos.entities.Product;
 import com.example.demospringpedidos.resources.exceptions.StandardError;
+import com.example.demospringpedidos.resources.swaggerexamples.ProductResourceSwaggerExamples;
 import com.example.demospringpedidos.services.ProductService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -37,18 +38,14 @@ public class ProductResource {
 
     @Operation(summary = "Listar produtos", description = "Retorna a lista completa de produtos cadastrados.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Produtos encontrados com sucesso",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
-                            [
-                              {
-                                "id": 1,
-                                "name": "The Lord of the Rings",
-                                "description": "Lorem ipsum dolor sit amet, consectetur.",
-                                "price": 90.5,
-                                "imgUrl": "https://example.com/images/lord-of-the-rings.jpg"
-                              }
-                            ]
-                            """)))
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Produtos encontrados com sucesso",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = ProductResourceSwaggerExamples.GET_PRODUCTS_RESPONSE_SUCCESS
+                            )))
     })
     @GetMapping
     public ResponseEntity<List<Product>> findAll() {
@@ -58,18 +55,19 @@ public class ProductResource {
 
     @Operation(summary = "Buscar produto por id", description = "Retorna um produto específico pelo identificador.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Produto encontrado com sucesso",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(value = """
-                            {
-                              "id": 1,
-                              "name": "The Lord of the Rings",
-                              "description": "Lorem ipsum dolor sit amet, consectetur.",
-                              "price": 90.5,
-                              "imgUrl": "https://example.com/images/lord-of-the-rings.jpg"
-                            }
-                            """))),
-            @ApiResponse(responseCode = "404", description = "Produto não encontrado",
-                    content = @Content(mediaType = "application/json",
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Produto encontrado com sucesso",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = ProductResourceSwaggerExamples.GET_PRODUCT_BY_ID_RESPONSE_SUCCESS
+                            ))),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Produto não encontrado",
+                    content = @Content(
+                            mediaType = "application/json",
                             schema = @Schema(implementation = StandardError.class)))
     })
     @GetMapping(value = "/{id}")
@@ -91,27 +89,24 @@ public class ProductResource {
                     content = @Content(schema = @Schema(implementation = StandardError.class)))
     })
     @PostMapping
-    public ResponseEntity<Product> insert(@io.swagger.v3.oas.annotations.parameters.RequestBody(
-            required = true, description = "Dados do novo produto",
-            content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = Product.class),
-                    examples = @ExampleObject(value = """
-                            {
-                              "name": "Notebook Gamer",
-                              "description": "Notebook para jogos e trabalho.",
-                              "price": 5550.0,
-                              "imgUrl": "",
-                              "categories": [
-                                {
-                                  "id": 3
-                                }
-                              ]
-                            }
-                    """))) @Valid @RequestBody Product obj) {
+    public ResponseEntity<Product> insert(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    required = true,
+                    description = "Dados do novo produto",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = Product.class),
+                            examples = @ExampleObject(
+                                    value = ProductResourceSwaggerExamples.POST_PRODUCTS_REQUEST
+                            )))
+            @Valid
+            @RequestBody Product obj) {
         obj = service.insert(obj);
-        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(obj.getId()).toUri();
-        return ResponseEntity.created(uri).body(obj); // Retornando status code 201 com a uri do recurso criado no
-        // header Location e o objeto inserido no body
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(obj.getId())
+                .toUri();
+        return ResponseEntity.created(uri).body(obj);
     }
 
     @Operation(summary = "Atualizar produto", description = "Atualiza os dados de um produto existente.")
@@ -128,25 +123,20 @@ public class ProductResource {
                     content = @Content(schema = @Schema(implementation = StandardError.class)))
     })
     @PutMapping(value = "/{id}")
-    public ResponseEntity<Product> update(@Parameter(description = "ID do produto", example = "1")
-                                       @PathVariable Long id,
-                                       @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                                               required = true, description = "Dados atualizados do produto",
-                                               content = @Content(mediaType = "application/json",
-                                                       schema = @Schema(implementation = Product.class),
-                                                       examples = @ExampleObject(value = """
-                                                               {
-                                                                 "name": "Notebook Gamer",
-                                                                 "description": "Notebook para jogos e trabalho.",
-                                                                 "price": 6550.99,
-                                                                 "imgUrl": "",
-                                                                 "categories": [
-                                                                   {
-                                                                     "id": 3
-                                                                   }
-                                                                 ]
-                                                               }
-                                                       """))) @Valid @RequestBody Product obj) {
+    public ResponseEntity<Product> update(
+            @Parameter(description = "ID do produto", example = "1")
+            @PathVariable Long id,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    required = true,
+                    description = "Dados atualizados do produto",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = Product.class),
+                            examples = @ExampleObject(
+                                    value = ProductResourceSwaggerExamples.PUT_PRODUCT_REQUEST
+                            )))
+            @Valid
+            @RequestBody Product obj) {
         obj = service.update(id, obj);
         return ResponseEntity.ok().body(obj);
     }

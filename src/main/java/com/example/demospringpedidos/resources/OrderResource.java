@@ -6,6 +6,7 @@ import com.example.demospringpedidos.dto.OrderResponseDto;
 import com.example.demospringpedidos.dto.OrderUpdateRequestDto;
 import com.example.demospringpedidos.entities.Order;
 import com.example.demospringpedidos.resources.exceptions.StandardError;
+import com.example.demospringpedidos.resources.swaggerexamples.OrderResourceSwaggerExamples;
 import com.example.demospringpedidos.services.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -43,59 +44,20 @@ public class OrderResource {
     @Autowired
     private OrderMapper mapper;
 
-    @Operation(summary = "Listar pedidos", description = "Retorna a lista completa de pedidos cadastrados.")
+    @Operation(
+            summary = "Listar pedidos",
+            description = "Retorna a lista completa de pedidos cadastrados."
+    )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Pedidos encontrados com sucesso",
-                    content = @Content(mediaType = "application/json",
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Pedidos encontrados com sucesso",
+                    content = @Content(
+                            mediaType = "application/json",
                             array = @ArraySchema(schema = @Schema(implementation = OrderResponseDto.class)),
-                            examples = @ExampleObject(value = """
-                            [
-                              {
-                                "id": 1,
-                                "moment": "2019-06-20T19:53:07Z",
-                                "orderStatus": "PAID",
-                                "client": {
-                                  "id": 1,
-                                  "name": "Maria Brown",
-                                  "email": "maria@gmail.com",
-                                  "phone": "988888888"
-                                },
-                                "items": [
-                                  {
-                                    "product": {
-                                      "id": 1,
-                                      "name": "The Lord of the Rings",
-                                      "description": "Lorem ipsum dolor sit amet, consectetur.",
-                                      "price": 90.5,
-                                      "imgUrl": "",
-                                      "categories": [{"id": 2, "name": "Books"}]
-                                    },
-                                    "quantity": 2,
-                                    "price": 90.5,
-                                    "subTotal": 181.0
-                                  },
-                                  {
-                                    "product": {
-                                      "id": 3,
-                                      "name": "Macbook Pro",
-                                      "description": "Nam eleifend maximus tortor, at mollis.",
-                                      "price": 1250.0,
-                                      "imgUrl": "",
-                                      "categories": [{"id": 3, "name": "Computers"}]
-                                    },
-                                    "quantity": 1,
-                                    "price": 1250.0,
-                                    "subTotal": 1250.0
-                                  }
-                                ],
-                                "payment": {
-                                  "id": 1,
-                                  "moment": "2019-06-20T19:53:07Z"
-                                },
-                                "total": 1431.0
-                              }
-                            ]
-                            """)))
+                            examples = @ExampleObject(
+                                    value = OrderResourceSwaggerExamples.GET_ORDERS_RESPONSE_SUCCESS
+                            )))
     })
     @GetMapping
     public ResponseEntity<List<OrderResponseDto>> findAll() {
@@ -105,58 +67,23 @@ public class OrderResource {
         return ResponseEntity.ok().body(list);
     }
 
-    @Operation(summary = "Buscar pedido por id", description = "Retorna um pedido específico pelo identificador.")
+    @Operation(
+            summary = "Buscar pedido por id",
+            description = "Retorna um pedido específico pelo identificador."
+    )
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Pedido encontrado com sucesso",
-                    content = @Content(mediaType = "application/json",
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Pedido encontrado com sucesso",
+                    content = @Content(
+                            mediaType = "application/json",
                             schema = @Schema(implementation = OrderResponseDto.class),
-                            examples = @ExampleObject(value = """
-                            {
-                              "id": 1,
-                              "moment": "2019-06-20T19:53:07Z",
-                              "orderStatus": "PAID",
-                              "client": {
-                                "id": 1,
-                                "name": "Maria Brown",
-                                "email": "maria@gmail.com",
-                                "phone": "988888888"
-                              },
-                              "items": [
-                                {
-                                  "product": {
-                                    "id": 1,
-                                    "name": "The Lord of the Rings",
-                                    "description": "Lorem ipsum dolor sit amet, consectetur.",
-                                    "price": 90.5,
-                                    "imgUrl": "",
-                                    "categories": [{"id": 2, "name": "Books"}]
-                                  },
-                                  "quantity": 2,
-                                  "price": 90.5,
-                                  "subTotal": 181.0
-                                },
-                                {
-                                  "product": {
-                                    "id": 3,
-                                    "name": "Macbook Pro",
-                                    "description": "Nam eleifend maximus tortor, at mollis.",
-                                    "price": 1250.0,
-                                    "imgUrl": "",
-                                    "categories": [{"id": 3, "name": "Computers"}]
-                                  },
-                                  "quantity": 1,
-                                  "price": 1250.0,
-                                  "subTotal": 1250.0
-                                }
-                              ],
-                              "payment": {
-                                "id": 1,
-                                "moment": "2019-06-20T19:53:07Z"
-                              },
-                              "total": 1431.0
-                            }
-                            """))),
-            @ApiResponse(responseCode = "404", description = "Pedido não encontrado",
+                            examples = @ExampleObject(
+                                    value = OrderResourceSwaggerExamples.GET_ORDER_BY_ID_RESPONSE_SUCCESS
+                            ))),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Pedido não encontrado",
                     content = @Content(schema = @Schema(implementation = StandardError.class)))
     })
     @GetMapping(value = "/{id}")
@@ -178,19 +105,18 @@ public class OrderResource {
                     content = @Content(schema = @Schema(implementation = StandardError.class)))
     })
     @PostMapping
-    public ResponseEntity<OrderResponseDto> insert(@io.swagger.v3.oas.annotations.parameters.RequestBody(
-            required = true, description = "Cliente e produtos identificados por ID, com suas quantidades",
-            content = @Content(mediaType = "application/json",
-                    schema = @Schema(implementation = OrderRequestDto.class),
-                    examples = @ExampleObject(value = """
-                            {
-                              "clientId": 1,
-                              "items": [
-                                {"productId": 1, "quantity": 2},
-                                {"productId": 3, "quantity": 1}
-                              ]
-                            }
-                            """))) @Valid @RequestBody OrderRequestDto request) {
+    public ResponseEntity<OrderResponseDto> insert(
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    required = true,
+                    description = "Cliente e produtos identificados por ID, com suas quantidades",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = OrderRequestDto.class),
+                            examples = @ExampleObject(
+                                    value = OrderResourceSwaggerExamples.POST_ORDER_REQUEST
+                            )))
+            @Valid
+            @RequestBody OrderRequestDto request) {
         Order createdOrder = service.insert(request);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
@@ -214,38 +140,23 @@ public class OrderResource {
                     description = "Status ausente ou fora dos valores aceitos (1 a 5), "
                             + "ou regra de negócio não atendida",
                     content = @Content(schema = @Schema(implementation = StandardError.class),
-                            examples = @ExampleObject(value = """
-                                    {
-                                      "timestamp": "2026-10-10T23:51:14Z",
-                                      "status": 422,
-                                      "error": "Business error",
-                                      "message": "Invalid OrderStatus code",
-                                      "path": "/orders/2"
-                                    }
-                                    """)))
+                            examples = @ExampleObject(value = OrderResourceSwaggerExamples.PUT_ORDER_ERROR_422)))
     })
     @PutMapping(value = "/{id}")
-    public ResponseEntity<OrderResponseDto> update(@Parameter(description = "ID do pedido", example = "2")
-                                            @PathVariable Long id,
-                                        @io.swagger.v3.oas.annotations.parameters.RequestBody(
-                                                required = true, description = "Dados atualizados do pedido",
-                                                content = @Content(mediaType = "application/json",
-                                                        schema = @Schema(implementation = OrderUpdateRequestDto.class),
-                                                        examples = @ExampleObject(value = """
-                                                                {
-                                                                  "orderStatus": 2,
-                                                                  "items": [
-                                                                    {
-                                                                      "productId": 1,
-                                                                      "quantity": 3
-                                                                    },
-                                                                    {
-                                                                      "productId": 3,
-                                                                      "quantity": 4
-                                                                    }
-                                                                  ]
-                                                                }
-                                                       """))) @Valid @RequestBody OrderUpdateRequestDto request) {
+    public ResponseEntity<OrderResponseDto> update(
+            @Parameter(description = "ID do pedido", example = "2")
+            @PathVariable Long id,
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                    required = true,
+                    description = "Dados atualizados do pedido",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = OrderUpdateRequestDto.class),
+                            examples = @ExampleObject(
+                                    value = OrderResourceSwaggerExamples.PUT_ORDER_REQUEST
+                            )))
+            @Valid
+            @RequestBody OrderUpdateRequestDto request) {
         Order updatedOrder = service.update(id, request);
         return ResponseEntity.ok().body(mapper.toResponse(updatedOrder));
     }
