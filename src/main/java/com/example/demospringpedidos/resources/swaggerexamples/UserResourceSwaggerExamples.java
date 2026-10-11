@@ -2,6 +2,8 @@ package com.example.demospringpedidos.resources.swaggerexamples;
 
 public final class UserResourceSwaggerExamples {
 
+    private UserResourceSwaggerExamples() {}
+
     public static final String GET_USERS_RESPONSE_SUCCESS = """
                             [
                               {
